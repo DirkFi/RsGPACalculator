@@ -564,7 +564,9 @@ dependencies = [
 name = "gpacalculator"
 version = "0.1.0"
 dependencies = [
+ "gloo 0.8.1",
  "wasm-bindgen",
+ "web-sys",
  "yew",
 ]
 
