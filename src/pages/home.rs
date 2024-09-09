@@ -1,4 +1,5 @@
 //src/pages/home.rs
+use wasm_bindgen::JsValue;
 use web_sys::{console, HtmlInputElement};
 use yew::html::Scope;
 use yew::prelude::*;
@@ -25,7 +26,6 @@ struct State {
 pub struct Home {
     state: State,
     checks: Vec<bool>,
-    link: Scope<Self>,
 }
 
 pub enum Msg {
@@ -37,14 +37,13 @@ impl Component for Home {
     type Message = Msg;
     type Properties = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         console::log_1(&"Hello from Yew in creation!".into());
-        let link = ctx.link().clone();
         let courses = vec![Course {
             id: 0,
             name: "Machine Learning".to_string(),
-            teacher: "".to_string(),
-            description: "".to_string(),
+            teacher: "Steven Bergner".to_string(),
+            description: "Machine learning is the study of computer algorithms that improve automatically through experience, which play an increasingly important role in artificial intelligence, computer science and beyond. The goal of this course is to introduce students to machine learning, starting from the foundations and gradually building up to modern techniques. Students in the course will learn about the theoretical underpinnings, modern applications and software tools for applying deep learning. This course is intended to be an introductory course for students interested in conducting research in machine learning or applying machine learning, and should prepare students for more advanced courses, such as CMPT 727 and CMPT 728. No previous knowledge of machine learning is assumed, but students are expected to have solid background in calculus, linear algebra, probability and programming using Python.".to_string(),
             image: "".to_string(),
         }];
         let grades: Vec<Grade> = vec![];
@@ -52,14 +51,12 @@ impl Component for Home {
         Self {
             state: State { courses, grades },
             checks,
-            link,
         }
     }
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::UpdateValue(index, value) => {
-                console::log_1(&"Hello from update 1st!".into());
                 if let Some(check_box) = self.checks.get(index) {
                     if *check_box {
                         let course = self.state.courses.iter().find(|c| c.id == index).unwrap();
@@ -73,14 +70,14 @@ impl Component for Home {
                                 point: value.parse::<f32>().unwrap(),
                             });
                         }
-                        console::log_1(&"Hello from Yew!".into());
+                        console::log_1(&"Current point is: ".into());
+                        console::log_1(&JsValue::from(self.state.grades[index].point));
                     }
                 }
                 true
             }
 
             Msg::Chosen(id) => {
-                console::log_1(&"Hello from update 2nd!".into());
                 if let Some(check_box) = self.checks.get_mut(id) {
                     *check_box = !*check_box;
                 } else {
@@ -102,14 +99,6 @@ impl Component for Home {
             .iter()
             .map(|course: &Course| {
                 let idx = course.id;
-                let mut point = String::from("0.0");
-                let mut checked = false;
-                if idx < self.state.grades.len() {
-                    point = self.state.grades[idx].point.to_string();
-                }
-                if idx < self.checks.len() {
-                    checked = self.checks[idx];
-                }
                 let oninput = ctx.link().callback(move |e: InputEvent| {
                     let input: HtmlInputElement = e.target_unchecked_into();
                     Msg::UpdateValue(idx, input.value())
@@ -117,18 +106,18 @@ impl Component for Home {
 
                 let ontoggle = ctx.link().callback(move |_| Msg::Chosen(idx));
                 html! {
-                     <div>
-                     <img src={course.image.clone()}/>
-
-                     <div> {course.name.clone()}</div>
-                     <div> {course.teacher.clone()}</div>
-                     <div> {course.description.clone()}</div>
                 <div>
-                    <input type="number" step="any"  {oninput} />
-                    <input type="checkbox"  {ontoggle} />
+                    <img src={course.image.clone()}/>
+
+                    <div> {course.name.clone()}</div>
+                    <div> {course.teacher.clone()}</div>
+                    <div> {course.description.clone()}</div>
+                    <div>
+                        <input type="number" step="any"  {oninput} />
+                        <input type="checkbox"  onclick={ontoggle} />
+                    </div>
                 </div>
-                </div>
-                     }
+                }
             })
             .collect();
         html! { <span>{courses}</span> }
