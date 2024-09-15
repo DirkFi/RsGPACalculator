@@ -107,10 +107,16 @@ impl Component for Home {
             Msg::GetCourses => {
                 self.state.get_courses_loaded = false;
                 let link = ctx.link().clone();
-                let handler =
-                    Callback::from(move |result: Result<Vec<Course>, Error>| match result {
-                        Ok(courses) => link.send_message(Msg::GetCoursesSuccess(courses)),
-                        Err(err) => link.send_message(Msg::GetCoursesError(err)),
+                // let handler =
+                //     Callback::from(move |result: Result<Vec<Course>, Error>| match result {
+                //         Ok(courses) => link.send_message(Msg::GetCoursesSuccess(courses)),
+                //         Err(err) => link.send_message(Msg::GetCoursesError(err)),
+                //     });
+                let handler = ctx
+                    .link()
+                    .callback(move |result: Result<Vec<Course>, Error>| match result {
+                        Ok(courses) => Msg::GetCoursesSuccess(courses),
+                        Err(err) => Msg::GetCoursesError(err),
                     });
                 get_courses(handler);
                 true
