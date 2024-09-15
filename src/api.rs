@@ -15,13 +15,22 @@ use yew::prelude::*;
 //     FetchService::fetch(req, callback).unwrap()
 // }
 
-pub fn get_products(callback: Callback<Result<Vec<Course>, Error>>) {
+pub fn get_courses(callback: Callback<Result<Vec<Course>, Error>>) {
     spawn_local(async move {
-        let result = Request::get("/products/products.json")
-            .send()
-            .await
-            .map_err(Error::from)
-            .and_then(|resp| resp.json::<Vec<Course>>().await.map_err(Error::from));
+        let result = async {
+            let response = Request::get("/courses/courses.json")
+                .send()
+                .await
+                .map_err(Error::from)?;
+
+            // Parse JSON as Vec<Course>
+            let products = response.json::<Vec<Course>>().await.map_err(Error::from)?;
+
+            Ok(products)
+        }
+        .await;
+
+        // pass the res
         callback.emit(result);
     });
 }
