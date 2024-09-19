@@ -1,6 +1,8 @@
 //src/components/course_card.rs
+use crate::route::Route;
 use crate::types::Course;
 use yew::prelude::*;
+use yew_router::prelude::*;
 
 pub struct CourseCard {
     props: Props,
@@ -37,11 +39,13 @@ impl Component for CourseCard {
 
         html! {
         <div class="course_card_container">
-            <img class="course_card_image" src={self.props.course.image.clone()}/>
+            <Link<Route> to={Route::CourseDetail  { id: self.props.course.id }} classes="course_card_anchor">
+                <img class="course_card_image" src={self.props.course.image.clone()}/>
 
-            <div class="course_card_name"> {self.props.course.name.clone()}</div>
-            <div class="course_card_teacher"> {self.props.course.teacher.clone()}</div>
-            // <div class="course_card_desp"> {self.props.course.description.clone()}</div>
+                <div class="course_card_name"> {self.props.course.name.clone()}</div>
+                <div class="course_card_teacher"> {self.props.course.teacher.clone()}</div>
+                // <div class="course_card_desp"> {self.props.course.description.clone()}</div>
+            </Link<Route>>
             <div>
                 <input type="number" step="any"  {oninput} />
                 <input type="checkbox"  onclick={ontoggle} />

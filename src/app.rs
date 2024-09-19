@@ -2,7 +2,7 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::pages::Home;
+use crate::pages::{CourseDetail, Home};
 use crate::route::Route;
 
 pub struct App {}
@@ -43,5 +43,6 @@ impl Component for App {
 fn switch(routes: Route) -> Html {
     match routes {
         Route::HomePage => html! {<Home/>},
+        Route::CourseDetail { id } => html! {<CourseDetail id={ id }/>},
     }
 }
