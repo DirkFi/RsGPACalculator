@@ -1,5 +1,6 @@
 //src/pages/home.rs
 use crate::api::get_courses;
+use crate::components::CourseCard;
 use crate::types::Course;
 use anyhow::Error;
 use std::cmp::min;
@@ -7,16 +8,6 @@ use wasm_bindgen::JsValue;
 use web_sys::{console, HtmlInputElement};
 use yew::prelude::*;
 
-// #[derive(Clone, Properties, PartialEq)]
-// struct Course {
-//     id: usize,
-//     name: String,
-//     teacher: String,
-//     description: String,
-//     image: String,
-//     unit: i32,
-// }
-//
 struct State {
     courses: Vec<Course>,
     grades: Vec<f32>,
@@ -106,7 +97,7 @@ impl Component for Home {
             // }
             Msg::GetCourses => {
                 self.state.get_courses_loaded = false;
-                let link = ctx.link().clone();
+                // let link = ctx.link().clone();
                 // let handler =
                 //     Callback::from(move |result: Result<Vec<Course>, Error>| match result {
                 //         Ok(courses) => link.send_message(Msg::GetCoursesSuccess(courses)),
@@ -183,18 +174,21 @@ impl Component for Home {
                 });
 
                 let ontoggle = ctx.link().callback(move |_| Msg::Chosen(index));
+                // html! {
+                // <div>
+                //     <img src={course.image.clone()}/>
+                //
+                //     <div> {course.name.clone()}</div>
+                //     <div> {course.teacher.clone()}</div>
+                //     <div> {course.description.clone()}</div>
+                //     <div>
+                //         <input type="number" step="any"  {oninput} />
+                //         <input type="checkbox"  onclick={ontoggle} />
+                //     </div>
+                // </div>
+                // }
                 html! {
-                <div>
-                    <img src={course.image.clone()}/>
-
-                    <div> {course.name.clone()}</div>
-                    <div> {course.teacher.clone()}</div>
-                    <div> {course.description.clone()}</div>
-                    <div>
-                        <input type="number" step="any"  {oninput} />
-                        <input type="checkbox"  onclick={ontoggle} />
-                    </div>
-                </div>
+                <CourseCard course={course.clone()} on_input_change={oninput} on_toggle={ontoggle}/>
                 }
             })
             .collect();
@@ -210,12 +204,25 @@ impl Component for Home {
             }
         } else {
             html! {
+            <div>
+                <div class="navbar">
+                    <div class="navbar_title"> {"GPA Calculator written in Rust"}</div>
+                    <div class="navbar_value"> {self.calculate_gpa()}</div>
+
+                </div>
                 <div>
-                    <span>{courses}</span>
+                    <span class="course_card_list">{courses}</span>
                     <button>{"Generate"}</button>
                     <p>{self.calculate_gpa()} </p>
                 </div>
-            }
+            </div>
+                }
         }
+        // TODO:
+        // idea:
+        // 1. click generate will get an independent view of gpa
+        // 2. Important! add one add function to manually add any course that is not in json file
+        // 3. seperate courses section based on different semesters
+        // 4. teacher intro goes to ratemyprof?
     }
 }
