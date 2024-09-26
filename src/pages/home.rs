@@ -174,19 +174,6 @@ impl Component for Home {
                 });
 
                 let ontoggle = ctx.link().callback(move |_| Msg::Chosen(index));
-                // html! {
-                // <div>
-                //     <img src={course.image.clone()}/>
-                //
-                //     <div> {course.name.clone()}</div>
-                //     <div> {course.teacher.clone()}</div>
-                //     <div> {course.description.clone()}</div>
-                //     <div>
-                //         <input type="number" step="any"  {oninput} />
-                //         <input type="checkbox"  onclick={ontoggle} />
-                //     </div>
-                // </div>
-                // }
                 html! {
                 <CourseCard course={course.clone()} on_input_change={oninput} on_toggle={ontoggle}/>
                 }
