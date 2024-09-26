@@ -83,7 +83,7 @@ impl Component for CourseDetail {
         res
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
+    fn changed(&mut self, _ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
         false
     }
 
@@ -92,17 +92,14 @@ impl Component for CourseDetail {
         if let Some(ref course) = self.state.course {
             console::log_1(&"Rendering course details".into());
             html! {
-            <>
-                    <div class="course_detail_container">
-                        <img class="course_detail_image" src={course.image.clone()}/>
-                        <div class="course_card_name">{course.name.clone()}</div>
-                        <div class="course_card_price">{course.teacher.clone()}</div>
-                        <div style="margin: 10px 0; line-height: 24px;">{course.description.clone()}</div>
-                        <button class="course_atc_button" onclick={ctx.link().callback(|_| Msg::NavigateToHome)}>{"Return to MainPage"}</button>
-                    </div>
-
-            </>
-                        }
+                <div class="course_detail_container">
+                    <img class="course_detail_image" src={course.image.clone()}/>
+                    <div class="course_card_name">{course.name.clone()}</div>
+                    <div class="course_card_price">{course.teacher.clone()}</div>
+                    <div style="margin: 10px 0; line-height: 24px;">{course.description.clone()}</div>
+                    <button class="course_atc_button" onclick={ctx.link().callback(|_| Msg::NavigateToHome)}>{"Return to MainPage"}</button>
+                </div>
+            }
         } else if !self.state.get_course_loaded {
             html! {
                 <div class="loading_spinner_container">
