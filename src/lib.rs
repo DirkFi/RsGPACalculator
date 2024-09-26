@@ -5,7 +5,6 @@ mod components;
 mod pages;
 mod route;
 mod types;
-use pages::Home;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(start)]

@@ -1,9 +1,10 @@
-//src/app.rs
+// src/app.rs
 use yew::prelude::*;
 use yew_router::prelude::*;
 
 use crate::pages::{CourseDetail, Home};
 use crate::route::Route;
+use web_sys::console;
 
 pub struct App {}
 
@@ -43,6 +44,9 @@ impl Component for App {
 fn switch(routes: Route) -> Html {
     match routes {
         Route::HomePage => html! {<Home/>},
-        Route::CourseDetail { id } => html! {<CourseDetail id={ id }/>},
+        Route::CourseDetail { id } => {
+            console::log_1(&"Successfully get the Route::CourseDetail!".into());
+            html! {<CourseDetail id={ id }/>}
+        }
     }
 }

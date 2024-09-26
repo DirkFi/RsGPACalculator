@@ -37,18 +37,10 @@ pub fn get_courses(callback: Callback<Result<Vec<Course>, Error>>) {
     });
 }
 
-// pub fn get_product(id: i32, callback: FetchCallback<Product>) -> FetchTask {
-//     let req = Request::get(format!("/products/{}.json", id))
-//         .body(Nothing)
-//         .unwrap();
-//
-//     FetchService::fetch(req, callback).unwrap()
-// }
-
 pub fn get_course(id: usize, callback: Callback<Result<Course, Error>>) {
     spawn_local(async move {
         let result = async {
-            let response = Request::get(&format!("courses/{}.json", id))
+            let response = Request::get(&format!("{}.json", id))
                 .send()
                 .await
                 .map_err(Error::from)?;
