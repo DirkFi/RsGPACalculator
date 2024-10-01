@@ -94,9 +94,9 @@ impl Component for CourseDetail {
             html! {
                 <div class="course_detail_container">
                     <img class="course_detail_image" src={course.image.clone()}/>
-                    <div class="course_card_name">{course.name.clone()}</div>
-                    <div class="course_card_price">{course.teacher.clone()}</div>
-                    <div style="margin: 10px 0; line-height: 24px;">{course.description.clone()}</div>
+                    <div class="course_card_name">{&course.name}</div>
+                    <div class="course_card_price">{&course.teacher}</div>
+                    <div style="margin: 10px 0; line-height: 24px;">{&course.description}</div>
                     <button class="course_atc_button" onclick={ctx.link().callback(|_| Msg::NavigateToHome)}>{"Return to MainPage"}</button>
                 </div>
             }

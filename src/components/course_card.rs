@@ -42,8 +42,8 @@ impl Component for CourseCard {
             <Link<Route> to={Route::CourseDetail  { id: self.props.course.id }} classes="course_card_anchor">
                 <img class="course_card_image" src={self.props.course.image.clone()}/>
 
-                <div class="course_card_name"> {self.props.course.name.clone()}</div>
-                <div class="course_card_teacher"> {self.props.course.teacher.clone()}</div>
+                <div class="course_card_name"> {&self.props.course.name}</div>
+                <div class="course_card_teacher"> {&self.props.course.teacher}</div>
                 // <div class="course_card_desp"> {self.props.course.description.clone()}</div>
             </Link<Route>>
             <div>

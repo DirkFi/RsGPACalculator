@@ -1,12 +1,19 @@
 //src/pages/home.rs
-use crate::api::get_courses;
 use crate::components::CourseCard;
 use crate::types::Course;
+use crate::{api::get_courses, components::GPAOverview};
 use anyhow::Error;
 use std::cmp::min;
 use wasm_bindgen::JsValue;
 use web_sys::{console, HtmlInputElement};
 use yew::prelude::*;
+use yew_router::prelude::*;
+
+#[derive(Routable, Debug, Clone, PartialEq)]
+enum InnerRoute {
+    #[at("/gpaview")]
+    GradeView,
+}
 
 struct State {
     courses: Vec<Course>,
@@ -28,33 +35,43 @@ pub enum Msg {
     GetCoursesError(Error),
 }
 
+pub fn point_to_pa(point: f32) -> f32 {
+    match point {
+        95.0..=100.0 => 4.33,
+        90.0..=95.0 => 4.0,
+        85.0..90.0 => 3.67,
+        80.0..85.0 => 3.33,
+        75.0..80.0 => 3.0,
+        70.0..75.0 => 2.67,
+        65.0..70.0 => 2.33,
+        60.0..65.0 => 2.0,
+        55.0..60.0 => 1.67,
+        50.0..55.0 => 1.0,
+        0.0..50.0 => 0.0,
+        _ => -1.0,
+    }
+}
+
 impl Home {
     fn calculate_gpa(&self) -> f32 {
         let mut numer: f32 = 0.0;
         let mut denomi: f32 = 0.0;
         for i in 0..self.state.courses.len() {
             if i < min(self.state.checks.len(), self.state.grades.len()) && self.state.checks[i] {
-                numer += self.point_to_pa(self.state.grades[i]) * self.state.courses[i].unit as f32;
+                numer += point_to_pa(self.state.grades[i]) * self.state.courses[i].unit as f32;
                 denomi += self.state.courses[i].unit as f32;
             }
         }
         numer / denomi
     }
 
-    fn point_to_pa(&self, point: f32) -> f32 {
-        match point {
-            95.0..=100.0 => 4.33,
-            90.0..=95.0 => 4.0,
-            85.0..90.0 => 3.67,
-            80.0..85.0 => 3.33,
-            75.0..80.0 => 3.0,
-            70.0..75.0 => 2.67,
-            65.0..70.0 => 2.33,
-            60.0..65.0 => 2.0,
-            55.0..60.0 => 1.67,
-            50.0..55.0 => 1.0,
-            0.0..50.0 => 0.0,
-            _ => -1.0,
+    fn switch_home(&self, route: InnerRoute) -> Html {
+        match route {
+            InnerRoute::GradeView => {
+                html! {
+                    <GPAOverview courses={self.state.courses.clone()} grades={self.state.grades.clone()} checks={self.state.checks.clone()}/>
+                }
+            }
         }
     }
 }
@@ -82,27 +99,8 @@ impl Component for Home {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            // Msg::GetCourses => {
-            //     self.state.get_courses_loaded = false;
-            //     let handler =
-            //         ctx.link()
-            //             .callback(move |response: api::FetchResponse<Vec<Course>>| {
-            //                 let (_, Json(data)) = response.into_parts();
-            //                 match data {
-            //                     Ok(courses) => Msg::GetCoursesSuccess(courses),
-            //                     Err(err) => Msg::GetCoursesError(err),
-            //                 }
-            //             });
-            //     true
-            // }
             Msg::GetCourses => {
                 self.state.get_courses_loaded = false;
-                // let link = ctx.link().clone();
-                // let handler =
-                //     Callback::from(move |result: Result<Vec<Course>, Error>| match result {
-                //         Ok(courses) => link.send_message(Msg::GetCoursesSuccess(courses)),
-                //         Err(err) => link.send_message(Msg::GetCoursesError(err)),
-                //     });
                 let handler = ctx
                     .link()
                     .callback(move |result: Result<Vec<Course>, Error>| match result {
@@ -161,7 +159,7 @@ impl Component for Home {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let courses: Vec<Html> = self
+        let courses_html: Vec<Html> = self
             .state
             .courses
             .iter()
@@ -190,20 +188,36 @@ impl Component for Home {
               </div>
             }
         } else {
-            html! {
-            <div>
-                <div class="navbar">
-                    <div class="navbar_title"> {"GPA Calculator written in Rust"}</div>
-                    <div class="navbar_value"> {self.calculate_gpa()}</div>
-
-                </div>
-                <div>
-                    <span class="course_card_list">{courses}</span>
-                    <button>{"Generate"}</button>
-                    <p>{self.calculate_gpa()} </p>
-                </div>
-            </div>
+            let courses = self.state.courses.clone();
+            let grades = self.state.grades.clone();
+            let checks = self.state.checks.clone();
+            let switch_home = move |route: InnerRoute| match route {
+                InnerRoute::GradeView => {
+                    html! {
+                        <GPAOverview courses={courses.clone()} grades={grades.clone()} checks={checks.clone()} />
+                    }
                 }
+                // 其他路由处理逻辑
+                _ => html! { <div>{"Route not found"}</div> },
+            };
+            html! {
+                <div>
+                    <div class="navbar">
+                        <div class="navbar_title"> {"GPA Calculator written in Rust"}</div>
+                        <div class="navbar_value"> {self.calculate_gpa()}</div>
+
+                    </div>
+                    <div>
+                        <span class="course_card_list">{courses_html}</span>
+                        <Link<InnerRoute> to={InnerRoute::GradeView }>
+                            <button>{"Generate"}</button>
+                        </Link<InnerRoute>>
+                        <p>{self.calculate_gpa()} </p>
+                    </div>
+                <Switch<InnerRoute> render={switch_home} />
+                </div>
+
+            }
         }
         // TODO:
         // idea:
