@@ -7,4 +7,7 @@ pub enum Route {
     CourseDetail { id: usize },
     #[at("/")]
     HomePage,
+
+    #[at("/gpaview")]
+    GPAView,
 }
