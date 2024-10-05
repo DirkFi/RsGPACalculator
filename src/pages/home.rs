@@ -1,12 +1,22 @@
 //src/pages/home.rs
-use crate::api::get_courses;
+use crate::app_state::{AppStateAction, AppStateContext};
 use crate::components::CourseCard;
+
+use crate::api::get_courses;
 use crate::types::Course;
 use anyhow::Error;
 use std::cmp::min;
+use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use web_sys::{console, HtmlInputElement};
 use yew::prelude::*;
+use yew_router::prelude::*;
+
+#[derive(Routable, Debug, Clone, PartialEq)]
+enum InnerRoute {
+    #[at("/gpaview")]
+    GradeView,
+}
 
 struct State {
     courses: Vec<Course>,
@@ -28,34 +38,34 @@ pub enum Msg {
     GetCoursesError(Error),
 }
 
+pub fn point_to_pa(point: f32) -> f32 {
+    match point {
+        95.0..=100.0 => 4.33,
+        90.0..=95.0 => 4.0,
+        85.0..90.0 => 3.67,
+        80.0..85.0 => 3.33,
+        75.0..80.0 => 3.0,
+        70.0..75.0 => 2.67,
+        65.0..70.0 => 2.33,
+        60.0..65.0 => 2.0,
+        55.0..60.0 => 1.67,
+        50.0..55.0 => 1.0,
+        0.0..50.0 => 0.0,
+        _ => -1.0,
+    }
+}
+
 impl Home {
     fn calculate_gpa(&self) -> f32 {
         let mut numer: f32 = 0.0;
         let mut denomi: f32 = 0.0;
         for i in 0..self.state.courses.len() {
             if i < min(self.state.checks.len(), self.state.grades.len()) && self.state.checks[i] {
-                numer += self.point_to_pa(self.state.grades[i]) * self.state.courses[i].unit as f32;
+                numer += point_to_pa(self.state.grades[i]) * self.state.courses[i].unit as f32;
                 denomi += self.state.courses[i].unit as f32;
             }
         }
         numer / denomi
-    }
-
-    fn point_to_pa(&self, point: f32) -> f32 {
-        match point {
-            95.0..=100.0 => 4.33,
-            90.0..=95.0 => 4.0,
-            85.0..90.0 => 3.67,
-            80.0..85.0 => 3.33,
-            75.0..80.0 => 3.0,
-            70.0..75.0 => 2.67,
-            65.0..70.0 => 2.33,
-            60.0..65.0 => 2.0,
-            55.0..60.0 => 1.67,
-            50.0..55.0 => 1.0,
-            0.0..50.0 => 0.0,
-            _ => -1.0,
-        }
     }
 }
 
@@ -66,9 +76,24 @@ impl Component for Home {
     fn create(ctx: &Context<Self>) -> Self {
         console::log_1(&"Hello from Yew in creation!".into());
         let courses: Vec<Course> = vec![];
-        let grades: Vec<f32> = vec![0.0; courses.len()];
-        let checks: Vec<bool> = vec![false; courses.len()];
         ctx.link().send_message(Msg::GetCourses);
+
+        let mut grades: Vec<f32> = vec![0.0; courses.len()];
+        let mut checks: Vec<bool> = vec![false; courses.len()];
+
+        console::log_1(&"hello after ctx sending links!".into());
+        let (app_state, _) = ctx
+            .link()
+            .context::<AppStateContext>(Callback::noop())
+            .expect("No AppStateContext found");
+
+        if app_state.grades.len() > 0 {
+            grades = (*app_state.grades).clone();
+        }
+
+        if app_state.checks.len() > 0 {
+            checks = (*app_state.checks).clone();
+        }
         Self {
             state: State {
                 courses,
@@ -82,27 +107,8 @@ impl Component for Home {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            // Msg::GetCourses => {
-            //     self.state.get_courses_loaded = false;
-            //     let handler =
-            //         ctx.link()
-            //             .callback(move |response: api::FetchResponse<Vec<Course>>| {
-            //                 let (_, Json(data)) = response.into_parts();
-            //                 match data {
-            //                     Ok(courses) => Msg::GetCoursesSuccess(courses),
-            //                     Err(err) => Msg::GetCoursesError(err),
-            //                 }
-            //             });
-            //     true
-            // }
             Msg::GetCourses => {
                 self.state.get_courses_loaded = false;
-                // let link = ctx.link().clone();
-                // let handler =
-                //     Callback::from(move |result: Result<Vec<Course>, Error>| match result {
-                //         Ok(courses) => link.send_message(Msg::GetCoursesSuccess(courses)),
-                //         Err(err) => link.send_message(Msg::GetCoursesError(err)),
-                //     });
                 let handler = ctx
                     .link()
                     .callback(move |result: Result<Vec<Course>, Error>| match result {
@@ -114,7 +120,14 @@ impl Component for Home {
             }
 
             Msg::GetCoursesSuccess(courses) => {
+                console::log_1(&"hello from GetCoursesSuccess!".into());
                 self.state.courses = courses;
+                if self.state.grades.is_empty(){
+                    self.state.grades = vec![0.0; self.state.courses.len()];
+                }
+                if self.state.checks.is_empty(){
+                    self.state.checks = vec![false; self.state.courses.len()];
+                }
                 self.state.get_courses_loaded = true;
                 true
             }
@@ -142,6 +155,24 @@ impl Component for Home {
                 }
                 console::log_1(&"Current point is: ".into());
                 console::log_1(&JsValue::from(self.state.grades[index]));
+
+                if self.state.get_courses_loaded {
+                    console::log_1(&"Change inside Home is qidong after if!".into());
+                    let (app_state, _context_handle) = ctx
+                        .link()
+                        .context::<AppStateContext>(Callback::noop())
+                        .expect("No AppStateContext found");
+
+                    let courses = Rc::new(self.state.courses.clone());
+                    let grades = Rc::new(self.state.grades.clone());
+                    let checks = Rc::new(self.state.checks.clone());
+
+                    app_state.dispatch(AppStateAction::UpdateAll {
+                        courses,
+                        grades,
+                        checks,
+                    });
+                }
                 true
             }
 
@@ -151,6 +182,24 @@ impl Component for Home {
                 } else {
                     self.state.checks.push(true);
                 }
+                if self.state.get_courses_loaded {
+                    console::log_1(&"Change inside Home is qidong after if!".into());
+                    let (app_state, _context_handle) = ctx
+                        .link()
+                        .context::<AppStateContext>(Callback::noop())
+                        .expect("No AppStateContext found");
+
+                    let courses = Rc::new(self.state.courses.clone());
+                    let grades = Rc::new(self.state.grades.clone());
+                    let checks = Rc::new(self.state.checks.clone());
+
+                    app_state.dispatch(AppStateAction::UpdateAll {
+                        courses,
+                        grades,
+                        checks,
+                    });
+                }
+
                 true
             }
         }
@@ -161,12 +210,12 @@ impl Component for Home {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let courses: Vec<Html> = self
+        let courses_html: Vec<Html> = self
             .state
             .courses
             .iter()
-            .map(|course: &Course| {
-                let index = course.id;
+            .enumerate()
+            .map(|(index, course): (usize, &Course)| {
                 let oninput = ctx.link().callback(move |e: InputEvent| {
                     let input: HtmlInputElement = e.target_unchecked_into();
 
@@ -175,7 +224,8 @@ impl Component for Home {
 
                 let ontoggle = ctx.link().callback(move |_| Msg::Chosen(index));
                 html! {
-                <CourseCard course={course.clone()} on_input_change={oninput} on_toggle={ontoggle}/>
+                <CourseCard course={course.clone()} grade={self.state.grades[index]} 
+                    check={self.state.checks[index]} on_input_change={oninput} on_toggle={ontoggle}/>
                 }
             })
             .collect();
@@ -191,23 +241,26 @@ impl Component for Home {
             }
         } else {
             html! {
-            <div>
-                <div class="navbar">
-                    <div class="navbar_title"> {"GPA Calculator written in Rust"}</div>
-                    <div class="navbar_value"> {self.calculate_gpa()}</div>
+                <div>
+                    <div class="navbar">
+                        <div class="navbar_title"> {"GPA Calculator written in Rust"}</div>
+                        <div class="navbar_value"> {self.calculate_gpa()}</div>
+
+                    </div>
+                    <div>
+                        <span class="course_card_list">{courses_html}</span>
+                        <Link<InnerRoute> to={InnerRoute::GradeView }>
+                            <button>{"Generate"}</button>
+                        </Link<InnerRoute>>
+                        <p>{self.calculate_gpa()} </p>
+                    </div>
 
                 </div>
-                <div>
-                    <span class="course_card_list">{courses}</span>
-                    <button>{"Generate"}</button>
-                    <p>{self.calculate_gpa()} </p>
-                </div>
-            </div>
-                }
+
+            }
         }
         // TODO:
         // idea:
-        // 1. click generate will get an independent view of gpa
         // 2. Important! add one add function to manually add any course that is not in json file
         // 3. seperate courses section based on different semesters
         // 4. teacher intro goes to ratemyprof?

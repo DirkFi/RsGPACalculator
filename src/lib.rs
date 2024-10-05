@@ -1,6 +1,7 @@
 // src/lib.rs
 mod api;
 mod app;
+mod app_state;
 mod components;
 mod pages;
 mod route;

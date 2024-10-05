@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-#[derive(Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Deserialize, Serialize, Clone, PartialEq, Debug)]
 pub struct Course {
     pub id: usize,
     pub name: String,
