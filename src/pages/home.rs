@@ -1,11 +1,10 @@
-//src/pages/home.rs
+// src/pages/home.rs
+
 use crate::app_state::{AppStateAction, AppStateContext};
 use crate::components::CourseCard;
-
 use crate::api::get_courses;
 use crate::types::Course;
 use anyhow::Error;
-use std::cmp::min;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use web_sys::{console, HtmlInputElement};
@@ -24,6 +23,9 @@ struct State {
     get_courses_error: Option<Error>,
     get_courses_loaded: bool,
     checks: Vec<bool>,
+    user_courses: Vec<Course>,     // User-added courses
+    user_grades: Vec<f32>,         // Grades for user-added courses
+    user_checks: Vec<bool>,        // Selection status for user-added courses
 }
 
 pub struct Home {
@@ -32,10 +34,15 @@ pub struct Home {
 
 pub enum Msg {
     UpdateValue(usize, String),
-    Chosen(usize),
+    ToggleCourseCheck(usize),
     GetCourses,
     GetCoursesSuccess(Vec<Course>),
     GetCoursesError(Error),
+    AddNewCourseCard,
+    UpdateUserCourseName(usize, String),
+    UpdateUserCourseUnit(usize, String),
+    UpdateUserCourseGrade(usize, String),
+    ToggleUserCourseCheck(usize),
 }
 
 pub fn point_to_pa(point: f32) -> f32 {
@@ -56,16 +63,126 @@ pub fn point_to_pa(point: f32) -> f32 {
 }
 
 impl Home {
+
     fn calculate_gpa(&self) -> f32 {
         let mut numer: f32 = 0.0;
         let mut denomi: f32 = 0.0;
+
+        // Include fetched courses
         for i in 0..self.state.courses.len() {
-            if i < min(self.state.checks.len(), self.state.grades.len()) && self.state.checks[i] {
+            if self.state.checks[i] {
                 numer += point_to_pa(self.state.grades[i]) * self.state.courses[i].unit as f32;
                 denomi += self.state.courses[i].unit as f32;
             }
         }
-        numer / denomi
+
+        // Include user-added courses
+        for i in 0..self.state.user_courses.len() {
+            if self.state.user_checks[i] {
+                numer += point_to_pa(self.state.user_grades[i]) * self.state.user_courses[i].unit as f32;
+                denomi += self.state.user_courses[i].unit as f32;
+            }
+        }
+
+        if denomi != 0.0 {
+            numer / denomi
+        } else {
+            0.0
+        }
+    }
+
+    fn view_user_course_card(&self, ctx: &Context<Self>, index: usize, course: &Course) -> Html {
+        let on_name_input = ctx.link().callback(move |e: InputEvent| {
+            let input: HtmlInputElement = e.target_unchecked_into();
+            Msg::UpdateUserCourseName(index, input.value())
+        });
+
+        let on_unit_input = ctx.link().callback(move |e: InputEvent| {
+            let input: HtmlInputElement = e.target_unchecked_into();
+            Msg::UpdateUserCourseUnit(index, input.value())
+        });
+
+        let on_grade_input = ctx.link().callback(move |e: InputEvent| {
+            let input: HtmlInputElement = e.target_unchecked_into();
+            Msg::UpdateUserCourseGrade(index, input.value())
+        });
+
+        let on_toggle = ctx.link().callback(move |_| Msg::ToggleUserCourseCheck(index));
+
+        html! {
+            <div class="course_card_container">
+                <input
+                    type="text"
+                    placeholder="Course Name"
+                    value={course.name.clone()}
+                    oninput={on_name_input}
+                />
+                <input
+                    type="text"
+                    placeholder="Unit"
+                    value={course.unit.to_string()}
+                    oninput={on_unit_input}
+                />
+                <input
+                    type="text"
+                    placeholder="Grade"
+                    value={self.state.user_grades[index].to_string()}
+                    oninput={on_grade_input}
+                />
+                <input
+                    type="checkbox"
+                    checked={self.state.user_checks[index]}
+                    onclick={on_toggle}
+                />
+            </div>
+        }
+    }
+    fn update_app_state(&self, ctx: &Context<Self>) {
+        let (app_state, _context_handle) = ctx
+            .link()
+            .context::<AppStateContext>(Callback::noop())
+            .expect("No AppStateContext found");
+
+        app_state.dispatch(AppStateAction::UpdateAll {
+            courses: Rc::new(self.state.courses.clone()),
+            grades: Rc::new(self.state.grades.clone()),
+            checks: Rc::new(self.state.checks.clone()),
+            user_courses: Rc::new(self.state.user_courses.clone()),
+            user_grades: Rc::new(self.state.user_grades.clone()),
+            user_checks: Rc::new(self.state.user_checks.clone()),
+        });
+    }
+
+    fn update_app_state_non_user(&self, ctx: &Context<Self>) {
+        if self.state.get_courses_loaded {
+            console::log_1(&"Updating AppState with non-user courses.".into());
+            let (app_state, _context_handle) = ctx
+                .link()
+                .context::<AppStateContext>(Callback::noop())
+                .expect("No AppStateContext found");
+
+            app_state.dispatch(AppStateAction::UpdateAllNonUser {
+                courses: Rc::new(self.state.courses.clone()),
+                grades: Rc::new(self.state.grades.clone()),
+                checks: Rc::new(self.state.checks.clone()),
+            });
+        }
+    }
+
+    fn update_app_state_user(&self, ctx: &Context<Self>) {
+        if self.state.get_courses_loaded {
+            console::log_1(&"Updating AppState with non-user courses.".into());
+            let (app_state, _context_handle) = ctx
+                .link()
+                .context::<AppStateContext>(Callback::noop())
+                .expect("No AppStateContext found");
+
+            app_state.dispatch(AppStateAction::UpdateAllUser {
+                user_courses: Rc::new(self.state.user_courses.clone()),
+                user_grades: Rc::new(self.state.user_grades.clone()),
+                user_checks: Rc::new(self.state.user_checks.clone()),
+            });
+        }
     }
 }
 
@@ -94,6 +211,20 @@ impl Component for Home {
         if app_state.checks.len() > 0 {
             checks = (*app_state.checks).clone();
         }
+        let mut user_courses = vec![];
+        let mut user_grades = vec![0.0; user_courses.len()];
+        let mut user_checks = vec![false; user_courses.len()];
+
+        if app_state.user_courses.len() > 0 {
+            user_courses = (*app_state.user_courses).clone();
+        }
+
+        if app_state.user_grades.len() > 0 {
+            user_grades = (*app_state.user_grades).clone();
+        }
+        if app_state.user_checks.len() > 0 {
+            user_checks = (*app_state.user_checks).clone();
+        }
         Self {
             state: State {
                 courses,
@@ -101,6 +232,9 @@ impl Component for Home {
                 checks,
                 get_courses_error: None,
                 get_courses_loaded: false,
+                user_courses,
+                user_grades,
+                user_checks,
             },
         }
     }
@@ -116,7 +250,6 @@ impl Component for Home {
                         Err(err) => Msg::GetCoursesError(err),
                     });
                 get_courses(handler);
-                true
             }
 
             Msg::GetCoursesSuccess(courses) => {
@@ -129,13 +262,11 @@ impl Component for Home {
                     self.state.checks = vec![false; self.state.courses.len()];
                 }
                 self.state.get_courses_loaded = true;
-                true
             }
 
             Msg::GetCoursesError(error) => {
                 self.state.get_courses_error = Some(error);
                 self.state.get_courses_loaded = true;
-                true
             }
 
             Msg::UpdateValue(index, value) => {
@@ -158,25 +289,11 @@ impl Component for Home {
 
                 if self.state.get_courses_loaded {
                     console::log_1(&"Change inside Home is qidong after if!".into());
-                    let (app_state, _context_handle) = ctx
-                        .link()
-                        .context::<AppStateContext>(Callback::noop())
-                        .expect("No AppStateContext found");
-
-                    let courses = Rc::new(self.state.courses.clone());
-                    let grades = Rc::new(self.state.grades.clone());
-                    let checks = Rc::new(self.state.checks.clone());
-
-                    app_state.dispatch(AppStateAction::UpdateAll {
-                        courses,
-                        grades,
-                        checks,
-                    });
+                    self.update_app_state_non_user(ctx);
                 }
-                true
             }
 
-            Msg::Chosen(id) => {
+            Msg::ToggleCourseCheck(id) => {
                 if let Some(check_box) = self.state.checks.get_mut(id) {
                     *check_box = !*check_box;
                 } else {
@@ -184,25 +301,69 @@ impl Component for Home {
                 }
                 if self.state.get_courses_loaded {
                     console::log_1(&"Change inside Home is qidong after if!".into());
-                    let (app_state, _context_handle) = ctx
-                        .link()
-                        .context::<AppStateContext>(Callback::noop())
-                        .expect("No AppStateContext found");
-
-                    let courses = Rc::new(self.state.courses.clone());
-                    let grades = Rc::new(self.state.grades.clone());
-                    let checks = Rc::new(self.state.checks.clone());
-
-                    app_state.dispatch(AppStateAction::UpdateAll {
-                        courses,
-                        grades,
-                        checks,
-                    });
+                    self.update_app_state_non_user(ctx);
                 }
 
-                true
+            }
+
+            Msg::AddNewCourseCard => {
+                // Add a new empty course to user_courses
+                self.state.user_courses.push(Course {
+                    id: self.state.courses.len() + self.state.user_courses.len(),
+                    teacher: "".to_string(),
+                    description: "".to_string(),
+                    image: "".to_string(),
+                    name: String::new(),
+                    unit: 0,
+                    // Other fields if necessary
+                });
+                self.state.user_grades.push(0.0);
+                self.state.user_checks.push(false);
+                // Update the AppState context
+                self.update_app_state_user(ctx);
+            }
+            Msg::UpdateUserCourseName(index, name) => {
+                if let Some(course) = self.state.user_courses.get_mut(index) {
+                    course.name = name;
+                }
+                self.update_app_state_user(ctx);
+            }
+            Msg::UpdateUserCourseUnit(index, unit_str) => {
+                if let Ok(unit) = unit_str.parse::<i32>() {
+                    if let Some(course) = self.state.user_courses.get_mut(index) {
+                        course.unit = unit;
+                    }
+                }
+                self.update_app_state_user(ctx);
+            }
+            Msg::UpdateUserCourseGrade(index, grade_str) => {
+                if let Ok(grade) = grade_str.parse::<f32>() {
+                    if let Some(grade_slot) = self.state.user_grades.get_mut(index) {
+                        *grade_slot = grade;
+                    }
+                }
+                let (app_state, _context_handle) = ctx
+                    .link()
+                    .context::<AppStateContext>(Callback::noop())
+                    .expect("No AppStateContext found");
+
+                app_state.dispatch(AppStateAction::UpdateAll {
+                    courses: Rc::new(self.state.courses.clone()),
+                    grades: Rc::new(self.state.grades.clone()),
+                    checks: Rc::new(self.state.checks.clone()),
+                    user_courses: Rc::new(self.state.user_courses.clone()),
+                    user_grades: Rc::new(self.state.user_grades.clone()),
+                    user_checks: Rc::new(self.state.user_checks.clone()),
+                });
+            }
+            Msg::ToggleUserCourseCheck(index) => {
+                if let Some(check) = self.state.user_checks.get_mut(index) {
+                    *check = !*check;
+                }
+                self.update_app_state_user(ctx);
             }
         }
+        true
     }
 
     fn changed(&mut self, _ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
@@ -222,7 +383,7 @@ impl Component for Home {
                     Msg::UpdateValue(index, input.value())
                 });
 
-                let ontoggle = ctx.link().callback(move |_| Msg::Chosen(index));
+                let ontoggle = ctx.link().callback(move |_| Msg::ToggleCourseCheck(index));
                 html! {
                 <CourseCard course={course.clone()} grade={self.state.grades[index]} 
                     check={self.state.checks[index]} on_input_change={oninput} on_toggle={ontoggle}/>
@@ -249,6 +410,17 @@ impl Component for Home {
                     </div>
                     <div>
                         <span class="course_card_list">{courses_html}</span>
+                        // Button to add a new CourseCard
+                        <button onclick={ctx.link().callback(|_| Msg::AddNewCourseCard)}>
+                            { "Add New Course" }
+                        </button>
+
+                        // Render the list of user-added CourseCards
+                        <div class="course_card_list">
+                            { for self.state.user_courses.iter().enumerate().map(|(index, course)| {
+                                self.view_user_course_card(ctx, index, course)
+                            })}
+                        </div>
                         <Link<InnerRoute> to={InnerRoute::GradeView }>
                             <button>{"Generate"}</button>
                         </Link<InnerRoute>>
@@ -261,6 +433,7 @@ impl Component for Home {
         }
         // TODO:
         // idea:
+        // 1. Change the context update to be cleaner
         // 2. Important! add one add function to manually add any course that is not in json file
         // 3. seperate courses section based on different semesters
         // 4. teacher intro goes to ratemyprof?

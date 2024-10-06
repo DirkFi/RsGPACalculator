@@ -35,7 +35,7 @@ body {
 
 .course_card_list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   grid-gap: 10px;
   padding: 10px;
 }
@@ -54,6 +54,10 @@ body {
   transition: background, border-color 300ms;
 }
 
+.grade_input {
+  margin-left: 5px;
+  padding-left: 5px;
+}
 .course_card_anchor {
   text-decoration: none;
   color: #333;
@@ -63,7 +67,9 @@ body {
 }
 
 .course_card_image {
-  width: 80%;
+  width: 115px; 
+  height: 195px; 
+  border-radius: 8px;
   object-fit: contain;
 }
 
