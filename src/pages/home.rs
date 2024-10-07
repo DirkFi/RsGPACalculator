@@ -111,24 +111,41 @@ impl Home {
 
         html! {
             <div class="course_card_container">
-                <input
-                    type="text"
-                    placeholder="Course Name"
-                    value={course.name.clone()}
-                    oninput={on_name_input}
-                />
-                <input
-                    type="text"
-                    placeholder="Unit"
-                    value={course.unit.to_string()}
-                    oninput={on_unit_input}
-                />
-                <input
-                    type="text"
-                    placeholder="Grade"
-                    value={self.state.user_grades[index].to_string()}
-                    oninput={on_grade_input}
-                />
+                <div class="form-group">
+                    <label for="cname">{ "Course Name: " }</label>
+                    <input
+                        type="text"
+                        id="cname"
+                        placeholder="Course Name"
+                        value={course.name.clone()}
+                        oninput={on_name_input}
+                    />
+                    <br/>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="unit">{ "Unit: " }</label>
+                    <input
+                        type="text"
+                        id="unit"
+                        placeholder="Unit"
+                        value={course.unit.to_string()}
+                        oninput={on_unit_input}
+                    />
+                    <br/>
+                </div>
+
+                <div class="form-group">
+                    <label for="grade">{ "Grade: " }</label>
+                    <input
+                        type="text"
+                        id="grade"
+                        placeholder="Grade"
+                        value={self.state.user_grades[index].to_string()}
+                        oninput={on_grade_input}
+                    />
+                </div>
                 <input
                     type="checkbox"
                     checked={self.state.user_checks[index]}
@@ -405,15 +422,17 @@ impl Component for Home {
                 <div>
                     <div class="navbar">
                         <div class="navbar_title"> {"GPA Calculator written in Rust"}</div>
-                        <div class="navbar_value"> {self.calculate_gpa()}</div>
+                        <div class="navbar_value"> {"GPA: "}{self.calculate_gpa()}</div>
 
                     </div>
                     <div>
                         <span class="course_card_list">{courses_html}</span>
                         // Button to add a new CourseCard
-                        <button onclick={ctx.link().callback(|_| Msg::AddNewCourseCard)}>
-                            { "Add New Course" }
-                        </button>
+                        <div class="home-button">
+                            <button class="button-28" onclick={ctx.link().callback(|_| Msg::AddNewCourseCard)}>
+                                { "Add New Course" }
+                            </button>
+                        </div>
 
                         // Render the list of user-added CourseCards
                         <div class="course_card_list">
@@ -422,9 +441,10 @@ impl Component for Home {
                             })}
                         </div>
                         <Link<InnerRoute> to={InnerRoute::GradeView }>
-                            <button>{"Generate"}</button>
+                            <div class="home-button">
+                                <button class="button-28">{"Generate"}</button>
+                            </div>
                         </Link<InnerRoute>>
-                        <p>{self.calculate_gpa()} </p>
                     </div>
 
                 </div>

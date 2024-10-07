@@ -1,8 +1,10 @@
 // src/components/gpa_overview.rs
 use crate::app_state::AppStateContext;
 use crate::pages::point_to_pa;
+use crate::route::Route;
 use crate::types::Course;
 use yew::prelude::*;
+use yew_router::prelude::Link;
 
 #[function_component(GPAOverview)]
 pub fn gpa_overview() -> Html {
@@ -76,9 +78,12 @@ pub fn gpa_overview() -> Html {
             <div style="font-size: 18px; font-weight: bold; text-align: center; margin-top: 20px;">
                 {format!("Overall GPA is：{:.2}", gpa)}
             </div>
+
+            <Link<Route>  to={Route::HomePage } >
+                <div class="gpa-button-container">
+                    <button class="course_atc_button">{"Return to MainPage"}</button>
+                </div>
+            </Link<Route>>
         </div>
     }
 }
-
-
-
