@@ -12,7 +12,7 @@ pub fn app() -> Html {
     let app_state = use_reducer(AppState::default);
 
     html! {
-        <ContextProvider<AppStateContext> context={app_state.clone()}>
+        <ContextProvider<AppStateContext> context={app_state}>
             <BrowserRouter>
                 <Switch<Route> render={switch} />
             </BrowserRouter>
