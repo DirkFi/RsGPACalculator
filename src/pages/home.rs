@@ -1,8 +1,8 @@
 // src/pages/home.rs
 
-use crate::app_state::{AppStateAction, AppStateContext};
-use crate::components::CourseCard;
 use crate::api::get_courses;
+use crate::app_state::{AppStateAction, AppStateContext, AppStateValue};
+use crate::components::CourseCard;
 use crate::types::Course;
 use anyhow::Error;
 use std::rc::Rc;
@@ -23,9 +23,9 @@ struct State {
     get_courses_error: Option<Error>,
     get_courses_loaded: bool,
     checks: Vec<bool>,
-    user_courses: Vec<Course>,     // User-added courses
-    user_grades: Vec<f32>,         // Grades for user-added courses
-    user_checks: Vec<bool>,        // Selection status for user-added courses
+    user_courses: Vec<Course>, // User-added courses
+    user_grades: Vec<f32>,     // Grades for user-added courses
+    user_checks: Vec<bool>,    // Selection status for user-added courses
 }
 
 pub struct Home {
@@ -63,24 +63,30 @@ pub fn point_to_pa(point: f32) -> f32 {
 }
 
 impl Home {
-
-    fn calculate_gpa(&self) -> f32 {
+    fn calculate_gpa(&self, ctx: &Context<Self>) -> f32 {
         let mut numer: f32 = 0.0;
         let mut denomi: f32 = 0.0;
 
         // Include fetched courses
-        for i in 0..self.state.courses.len() {
-            if self.state.checks[i] {
-                numer += point_to_pa(self.state.grades[i]) * self.state.courses[i].unit as f32;
-                denomi += self.state.courses[i].unit as f32;
+
+        let (app_state, _context_handle) = ctx
+            .link()
+            .context::<AppStateContext>(Callback::noop())
+            .expect("No AppStateContext found");
+
+        for i in 0..app_state.checks.len() {
+            if app_state.checks[i] {
+                numer += point_to_pa(app_state.grades[i]) * app_state.courses[i].unit as f32;
+                denomi += app_state.courses[i].unit as f32;
             }
         }
 
         // Include user-added courses
-        for i in 0..self.state.user_courses.len() {
-            if self.state.user_checks[i] {
-                numer += point_to_pa(self.state.user_grades[i]) * self.state.user_courses[i].unit as f32;
-                denomi += self.state.user_courses[i].unit as f32;
+        for i in 0..app_state.user_checks.len() {
+            if app_state.user_checks[i] {
+                numer +=
+                    point_to_pa(app_state.user_grades[i]) * app_state.user_courses[i].unit as f32;
+                denomi += app_state.user_courses[i].unit as f32;
             }
         }
 
@@ -92,6 +98,12 @@ impl Home {
     }
 
     fn view_user_course_card(&self, ctx: &Context<Self>, index: usize, course: &Course) -> Html {
+        let (app_state, _context_handle) = ctx
+            .link()
+            .context::<AppStateContext>(Callback::noop())
+            .expect("No AppStateContext found");
+        let user_grades = (*app_state.user_grades).clone();
+        let user_checks = (*app_state.user_checks).clone();
         let on_name_input = ctx.link().callback(move |e: InputEvent| {
             let input: HtmlInputElement = e.target_unchecked_into();
             Msg::UpdateUserCourseName(index, input.value())
@@ -107,7 +119,9 @@ impl Home {
             Msg::UpdateUserCourseGrade(index, input.value())
         });
 
-        let on_toggle = ctx.link().callback(move |_| Msg::ToggleUserCourseCheck(index));
+        let on_toggle = ctx
+            .link()
+            .callback(move |_| Msg::ToggleUserCourseCheck(index));
 
         html! {
             <div class="course_card_container">
@@ -142,31 +156,38 @@ impl Home {
                         type="text"
                         id="grade"
                         placeholder="Grade"
-                        value={self.state.user_grades[index].to_string()}
+                        value={user_grades[index].to_string()}
                         oninput={on_grade_input}
                     />
                 </div>
                 <input
                     type="checkbox"
-                    checked={self.state.user_checks[index]}
+                    checked={user_checks[index]}
                     onclick={on_toggle}
                 />
             </div>
         }
     }
-    fn update_app_state(&self, ctx: &Context<Self>) {
+
+    fn update_app_state(
+        &self,
+        ctx: &Context<Self>,
+        courses: Vec<Course>,
+        grades: Vec<f32>,
+        checks: Vec<bool>,
+    ) {
         let (app_state, _context_handle) = ctx
             .link()
             .context::<AppStateContext>(Callback::noop())
             .expect("No AppStateContext found");
 
         app_state.dispatch(AppStateAction::UpdateAll {
-            courses: Rc::new(self.state.courses.clone()),
-            grades: Rc::new(self.state.grades.clone()),
-            checks: Rc::new(self.state.checks.clone()),
-            user_courses: Rc::new(self.state.user_courses.clone()),
-            user_grades: Rc::new(self.state.user_grades.clone()),
-            user_checks: Rc::new(self.state.user_checks.clone()),
+            courses: Rc::new(courses.clone()),
+            grades: Rc::new(grades.clone()),
+            checks: Rc::new(checks.clone()),
+            user_courses: Rc::new((*app_state.user_courses).clone()),
+            user_grades: Rc::new((*app_state.user_grades).clone()),
+            user_checks: Rc::new((*app_state.user_checks).clone()),
         });
     }
 
@@ -185,8 +206,13 @@ impl Home {
             });
         }
     }
-
-    fn update_app_state_user(&self, ctx: &Context<Self>) {
+    fn update_app_state_user(
+        &self,
+        ctx: &Context<Self>,
+        user_courses: Vec<Course>,
+        user_grades: Vec<f32>,
+        user_checks: Vec<bool>,
+    ) {
         if self.state.get_courses_loaded {
             console::log_1(&"Updating AppState with non-user courses.".into());
             let (app_state, _context_handle) = ctx
@@ -195,11 +221,20 @@ impl Home {
                 .expect("No AppStateContext found");
 
             app_state.dispatch(AppStateAction::UpdateAllUser {
-                user_courses: Rc::new(self.state.user_courses.clone()),
-                user_grades: Rc::new(self.state.user_grades.clone()),
-                user_checks: Rc::new(self.state.user_checks.clone()),
+                user_courses: Rc::new(user_courses.clone()),
+                user_grades: Rc::new(user_grades.clone()),
+                user_checks: Rc::new(user_checks.clone()),
             });
         }
+    }
+
+    fn update_app_single(&self, ctx: &Context<Self>, values: AppStateValue) {
+        let (app_state, _context_handle) = ctx
+            .link()
+            .context::<AppStateContext>(Callback::noop())
+            .expect("No AppStateContext found");
+
+        app_state.dispatch(AppStateAction::UpdateSingle { values });
     }
 }
 
@@ -257,6 +292,10 @@ impl Component for Home {
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        let (app_state, _context_handle) = ctx
+            .link()
+            .context::<AppStateContext>(Callback::noop())
+            .expect("No AppStateContext found");
         match msg {
             Msg::GetCourses => {
                 self.state.get_courses_loaded = false;
@@ -271,30 +310,44 @@ impl Component for Home {
 
             Msg::GetCoursesSuccess(courses) => {
                 console::log_1(&"hello from GetCoursesSuccess!".into());
-                self.state.courses = courses;
-                if self.state.grades.is_empty(){
-                    self.state.grades = vec![0.0; self.state.courses.len()];
-                }
-                if self.state.checks.is_empty(){
-                    self.state.checks = vec![false; self.state.courses.len()];
-                }
+                // if self.state.grades.is_empty(){
+                //     self.state.grades = vec![0.0; self.state.courses.len()];
+                // }
+                // if self.state.checks.is_empty(){
+                //     self.state.checks = vec![false; self.state.courses.len()];
+                // }
                 self.state.get_courses_loaded = true;
+
+                let mut grades = vec![0.0; courses.len()];
+                let mut checks = vec![false; courses.len()];
+                if !app_state.grades.is_empty() {
+                    grades = (*app_state.grades).clone();
+                }
+                if !app_state.checks.is_empty() {
+                    checks = (*app_state.checks).clone();
+                }
+                app_state.dispatch(AppStateAction::UpdateAllNonUser {
+                    courses: Rc::new(courses),
+                    grades: Rc::new(grades),
+                    checks: Rc::new(checks),
+                });
             }
 
             Msg::GetCoursesError(error) => {
                 self.state.get_courses_error = Some(error);
                 self.state.get_courses_loaded = true;
             }
-
+            // Need to change this from self to mutual context
             Msg::UpdateValue(index, value) => {
                 let possible_num = value.parse::<f32>();
+                let mut grades = (*app_state.grades).clone();
                 match possible_num {
                     Ok(num) => {
-                        if let Some(cg) = self.state.grades.get_mut(index) {
+                        if let Some(cg) = grades.get_mut(index) {
                             // update current course grade point to the new one
                             *cg = num;
                         } else {
-                            self.state.grades.push(num);
+                            grades.push(num);
                         }
                     }
                     Err(_) => {
@@ -302,30 +355,32 @@ impl Component for Home {
                     }
                 }
                 console::log_1(&"Current point is: ".into());
-                console::log_1(&JsValue::from(self.state.grades[index]));
+                console::log_1(&JsValue::from(grades[index]));
 
                 if self.state.get_courses_loaded {
-                    console::log_1(&"Change inside Home is qidong after if!".into());
-                    self.update_app_state_non_user(ctx);
+                    self.update_app_single(ctx, AppStateValue::Grades(grades));
                 }
             }
 
             Msg::ToggleCourseCheck(id) => {
-                if let Some(check_box) = self.state.checks.get_mut(id) {
+                let mut checks = (*app_state.checks).clone();
+                if let Some(check_box) = checks.get_mut(id) {
                     *check_box = !*check_box;
                 } else {
                     self.state.checks.push(true);
                 }
                 if self.state.get_courses_loaded {
                     console::log_1(&"Change inside Home is qidong after if!".into());
-                    self.update_app_state_non_user(ctx);
+                    self.update_app_single(ctx, AppStateValue::Checks(checks));
                 }
-
             }
 
             Msg::AddNewCourseCard => {
                 // Add a new empty course to user_courses
-                self.state.user_courses.push(Course {
+                let mut user_courses = (*app_state.user_courses).clone();
+                let mut user_grades = (*app_state.user_grades).clone();
+                let mut user_checks = (*app_state.user_checks).clone();
+                user_courses.push(Course {
                     id: self.state.courses.len() + self.state.user_courses.len(),
                     teacher: "".to_string(),
                     description: "".to_string(),
@@ -334,50 +389,44 @@ impl Component for Home {
                     unit: 0,
                     // Other fields if necessary
                 });
-                self.state.user_grades.push(0.0);
-                self.state.user_checks.push(false);
+                user_grades.push(0.0);
+                user_checks.push(false);
                 // Update the AppState context
-                self.update_app_state_user(ctx);
+                self.update_app_state_user(ctx, user_courses, user_grades, user_checks);
             }
             Msg::UpdateUserCourseName(index, name) => {
-                if let Some(course) = self.state.user_courses.get_mut(index) {
+                let mut user_courses = (*app_state.user_courses).clone();
+                if let Some(course) = user_courses.get_mut(index) {
                     course.name = name;
                 }
-                self.update_app_state_user(ctx);
+                self.update_app_single(ctx, AppStateValue::UserCourses(user_courses));
             }
             Msg::UpdateUserCourseUnit(index, unit_str) => {
+                let mut user_courses = (*app_state.user_courses).clone();
                 if let Ok(unit) = unit_str.parse::<i32>() {
-                    if let Some(course) = self.state.user_courses.get_mut(index) {
+                    if let Some(course) = user_courses.get_mut(index) {
                         course.unit = unit;
                     }
                 }
-                self.update_app_state_user(ctx);
+                self.update_app_single(ctx, AppStateValue::UserCourses(user_courses));
             }
             Msg::UpdateUserCourseGrade(index, grade_str) => {
+                let mut user_grades = (*app_state.user_grades).clone();
                 if let Ok(grade) = grade_str.parse::<f32>() {
-                    if let Some(grade_slot) = self.state.user_grades.get_mut(index) {
+                    if let Some(grade_slot) = user_grades.get_mut(index) {
                         *grade_slot = grade;
                     }
                 }
-                let (app_state, _context_handle) = ctx
-                    .link()
-                    .context::<AppStateContext>(Callback::noop())
-                    .expect("No AppStateContext found");
 
-                app_state.dispatch(AppStateAction::UpdateAll {
-                    courses: Rc::new(self.state.courses.clone()),
-                    grades: Rc::new(self.state.grades.clone()),
-                    checks: Rc::new(self.state.checks.clone()),
-                    user_courses: Rc::new(self.state.user_courses.clone()),
-                    user_grades: Rc::new(self.state.user_grades.clone()),
-                    user_checks: Rc::new(self.state.user_checks.clone()),
-                });
+                self.update_app_single(ctx, AppStateValue::UserGrades(user_grades));
             }
             Msg::ToggleUserCourseCheck(index) => {
-                if let Some(check) = self.state.user_checks.get_mut(index) {
+                let mut user_checks = (*app_state.user_checks).clone();
+                if let Some(check) = user_checks.get_mut(index) {
                     *check = !*check;
                 }
-                self.update_app_state_user(ctx);
+
+                self.update_app_single(ctx, AppStateValue::UserChecks(user_checks));
             }
         }
         true
@@ -388,8 +437,11 @@ impl Component for Home {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let courses_html: Vec<Html> = self
-            .state
+        let (app_state, _context_handle) = ctx
+            .link()
+            .context::<AppStateContext>(Callback::noop())
+            .expect("No AppStateContext found");
+        let courses_html: Vec<Html> = app_state
             .courses
             .iter()
             .enumerate()
@@ -402,8 +454,8 @@ impl Component for Home {
 
                 let ontoggle = ctx.link().callback(move |_| Msg::ToggleCourseCheck(index));
                 html! {
-                <CourseCard course={course.clone()} grade={self.state.grades[index]} 
-                    check={self.state.checks[index]} on_input_change={oninput} on_toggle={ontoggle}/>
+                <CourseCard course={course.clone()} grade={app_state.grades[index]}
+                    check={app_state.checks[index]} on_input_change={oninput} on_toggle={ontoggle}/>
                 }
             })
             .collect();
@@ -422,7 +474,7 @@ impl Component for Home {
                 <div>
                     <div class="navbar">
                         <div class="navbar_title"> {"GPA Calculator written in Rust"}</div>
-                        <div class="navbar_value"> {"GPA: "}{self.calculate_gpa()}</div>
+                        <div class="navbar_value"> {"GPA: "}{self.calculate_gpa(ctx)}</div>
 
                     </div>
                     <div>
@@ -436,7 +488,7 @@ impl Component for Home {
 
                         // Render the list of user-added CourseCards
                         <div class="course_card_list">
-                            { for self.state.user_courses.iter().enumerate().map(|(index, course)| {
+                            { for app_state.user_courses.iter().enumerate().map(|(index, course)| {
                                 self.view_user_course_card(ctx, index, course)
                             })}
                         </div>
@@ -454,8 +506,7 @@ impl Component for Home {
         // TODO:
         // idea:
         // 1. Change the context update to be cleaner
-        // 2. Important! add one add function to manually add any course that is not in json file
-        // 3. seperate courses section based on different semesters
-        // 4. teacher intro goes to ratemyprof?
+        // 2. seperate courses section based on different semesters
+        // 3. teacher intro goes to ratemyprof?
     }
 }

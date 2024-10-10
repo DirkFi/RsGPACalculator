@@ -3,6 +3,29 @@ use crate::types::Course;
 use std::rc::Rc;
 use yew::prelude::*;
 
+macro_rules! update_with_rc {
+    ($self:ident, { $( $field:ident ),* }, { $( $non_rc_field:ident : $value:expr ),* }) => {
+        Rc::new(Self {
+            $(
+                $field: Rc::clone(&$self.$field),
+            )*
+            $(
+                $non_rc_field: $value,
+            )*
+        })
+    };
+}
+
+#[derive(Clone, PartialEq)]
+pub enum AppStateValue {
+    Courses(Vec<Course>),
+    Grades(Vec<f32>),
+    Checks(Vec<bool>),
+    UserCourses(Vec<Course>),
+    UserGrades(Vec<f32>),
+    UserChecks(Vec<bool>),
+}
+
 #[derive(Clone, PartialEq)]
 pub struct AppState {
     pub courses: Rc<Vec<Course>>,
@@ -44,6 +67,10 @@ pub enum AppStateAction {
         user_courses: Rc<Vec<Course>>,
         user_grades: Rc<Vec<f32>>,
         user_checks: Rc<Vec<bool>>,
+    },
+
+    UpdateSingle {
+        values: AppStateValue,
     },
 }
 
@@ -91,6 +118,52 @@ impl Reducible for AppState {
                 user_grades,
                 user_checks,
             }),
+            AppStateAction::UpdateSingle { values } => {
+                match values {
+                    AppStateValue::Courses(courses) => {
+                        update_with_rc!(
+                            self,
+                            {  grades, checks,user_courses, user_grades,  user_checks },   // Rc::clone fields
+                            { courses: Rc::new( courses ) }  // non-Rc fields
+                        )
+                    }
+                    AppStateValue::Grades(grades) => {
+                        update_with_rc!(
+                            self,
+                            {  courses, checks,user_courses, user_grades,  user_checks },   // Rc::clone fields
+                            { grades: Rc::new( grades ) }  // non-Rc fields
+                        )
+                    }
+                    AppStateValue::Checks(checks) => {
+                        update_with_rc!(
+                            self,
+                            {  courses, grades,user_courses, user_grades,  user_checks },   // Rc::clone fields
+                            { checks: Rc::new( checks ) }  // non-Rc fields
+                        )
+                    }
+                    AppStateValue::UserCourses(user_courses) => {
+                        update_with_rc!(
+                            self,
+                            {  courses, grades,checks, user_grades,  user_checks },   // Rc::clone fields
+                            { user_courses: Rc::new( user_courses ) }  // non-Rc fields
+                        )
+                    }
+                    AppStateValue::UserGrades(user_grades) => {
+                        update_with_rc!(
+                            self,
+                            {  courses, grades,checks, user_courses,  user_checks },   // Rc::clone fields
+                            { user_grades: Rc::new( user_grades ) }  // non-Rc fields
+                        )
+                    }
+                    AppStateValue::UserChecks(user_checks) => {
+                        update_with_rc!(
+                            self,
+                            {  courses, grades,checks, user_courses,  user_grades },   // Rc::clone fields
+                            { user_checks: Rc::new( user_checks ) }  // non-Rc fields
+                        )
+                    }
+                }
+            }
         }
     }
 }
