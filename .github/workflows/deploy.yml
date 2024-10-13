@@ -35,7 +35,11 @@ jobs:
       - name: Build project
         run: cargo make build-ci
 
-      # 6. 部署到 gh-pages 分支
+      # 6. 列出 static 目录内容（用于调试）
+      - name: List static directory
+        run: ls -la ./static
+
+      # 7. 部署到 GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -43,3 +47,4 @@ jobs:
           publish_dir: ./static
           publish_branch: gh-pages
           force_orphan: true
+          allow_empty_commit: true
