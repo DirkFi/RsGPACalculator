@@ -12,6 +12,19 @@ args = [
 ]
 watch = { ignore_pattern = "static/*" }
 
+[tasks.build-ci]
+command = "wasm-pack"
+args = [
+  "build",
+  "--dev",
+  "--target",
+  "web",
+  "--out-name",
+  "wasm",
+  "--out-dir",
+  "./static",
+]
+
 [tasks.serve]
 command = "simple-http-server"
 args = [
