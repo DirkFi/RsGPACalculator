@@ -1,0 +1,45 @@
+# .github/workflows/deploy.yml
+name: Build and Deploy Yew App to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # 当 main 分支有推送时触发
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 检出仓库代码
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. 设置 Rust 工具链
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+
+      # 3. 安装 wasm-pack
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+
+      # 4. 安装 cargo-make
+      - name: Install cargo-make
+        run: cargo install cargo-make
+
+      # 5. 构建项目
+      - name: Build project
+        run: cargo make build
+
+      # 6. 部署到 gh-pages 分支
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./static
+          publish_branch: gh-pages
+          force_orphan: true
