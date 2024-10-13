@@ -33,7 +33,7 @@ jobs:
 
       # 5. 构建项目
       - name: Build project
-        run: cargo make build
+        run: cargo make build-ci
 
       # 6. 部署到 gh-pages 分支
       - name: Deploy to GitHub Pages
