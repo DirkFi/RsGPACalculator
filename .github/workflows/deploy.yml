@@ -6,6 +6,9 @@ on:
     branches:
       - main  # 当 main 分支有推送时触发
 
+permissions:
+  contents: write  # 赋予对仓库内容的写权限
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
