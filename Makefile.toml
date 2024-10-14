@@ -16,13 +16,13 @@ watch = { ignore_pattern = "static/*" }
 command = "wasm-pack"
 args = [
   "build",
-  "--dev",
+  "--release",  # Ensure this is release mode for production
   "--target",
   "web",
   "--out-name",
   "wasm",
   "--out-dir",
-  "./static",
+  "./static",   # This ensures files go into the ./static directory
 ]
 
 [tasks.serve]

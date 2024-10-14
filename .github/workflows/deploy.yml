@@ -36,7 +36,7 @@ jobs:
 
       # 5. 构建项目
       - name: Build project
-        run: cargo make build-ci
+        run: cargo make build-ci || echo "Build failed" && exit 1
 
       # 6. 列出 static 目录内容（用于调试）
       - name: List static directory
