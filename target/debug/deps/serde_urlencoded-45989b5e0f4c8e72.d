@@ -1,0 +1,11 @@
+/home/dirk/Code/MyProject/RustLearning/gpacalculator/target/debug/deps/libserde_urlencoded-45989b5e0f4c8e72.rmeta: /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/lib.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/de.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/ser/mod.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/ser/key.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/ser/pair.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/ser/part.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/ser/value.rs
+
+/home/dirk/Code/MyProject/RustLearning/gpacalculator/target/debug/deps/serde_urlencoded-45989b5e0f4c8e72.d: /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/lib.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/de.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/ser/mod.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/ser/key.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/ser/pair.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/ser/part.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/ser/value.rs
+
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/lib.rs:
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/de.rs:
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/ser/mod.rs:
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/ser/key.rs:
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/ser/pair.rs:
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/ser/part.rs:
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_urlencoded-0.7.1/src/ser/value.rs:

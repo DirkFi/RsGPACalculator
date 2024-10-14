@@ -1,0 +1,7 @@
+/home/dirk/Code/MyProject/RustLearning/gpacalculator/target/wasm32-unknown-unknown/release/deps/libpin_project-d3b3613c68780403.rmeta: /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/pin-project-1.1.5/src/lib.rs
+
+/home/dirk/Code/MyProject/RustLearning/gpacalculator/target/wasm32-unknown-unknown/release/deps/libpin_project-d3b3613c68780403.rlib: /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/pin-project-1.1.5/src/lib.rs
+
+/home/dirk/Code/MyProject/RustLearning/gpacalculator/target/wasm32-unknown-unknown/release/deps/pin_project-d3b3613c68780403.d: /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/pin-project-1.1.5/src/lib.rs
+
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/pin-project-1.1.5/src/lib.rs:

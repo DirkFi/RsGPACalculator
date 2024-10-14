@@ -1,0 +1,10 @@
+/home/dirk/Code/MyProject/RustLearning/gpacalculator/target/wasm32-unknown-unknown/release/deps/libgloo_storage-159fa1845333eebc.rmeta: /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/lib.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/errors.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/local_storage.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/session_storage.rs
+
+/home/dirk/Code/MyProject/RustLearning/gpacalculator/target/wasm32-unknown-unknown/release/deps/libgloo_storage-159fa1845333eebc.rlib: /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/lib.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/errors.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/local_storage.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/session_storage.rs
+
+/home/dirk/Code/MyProject/RustLearning/gpacalculator/target/wasm32-unknown-unknown/release/deps/gloo_storage-159fa1845333eebc.d: /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/lib.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/errors.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/local_storage.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/session_storage.rs
+
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/lib.rs:
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/errors.rs:
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/local_storage.rs:
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-storage-0.3.0/src/session_storage.rs:

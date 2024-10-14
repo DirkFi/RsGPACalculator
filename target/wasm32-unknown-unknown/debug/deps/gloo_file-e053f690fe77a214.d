@@ -1,0 +1,11 @@
+/home/dirk/Code/MyProject/RustLearning/gpacalculator/target/wasm32-unknown-unknown/debug/deps/libgloo_file-e053f690fe77a214.rmeta: /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/lib.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/blob.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/file_list.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/file_reader.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/object_url.rs
+
+/home/dirk/Code/MyProject/RustLearning/gpacalculator/target/wasm32-unknown-unknown/debug/deps/libgloo_file-e053f690fe77a214.rlib: /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/lib.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/blob.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/file_list.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/file_reader.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/object_url.rs
+
+/home/dirk/Code/MyProject/RustLearning/gpacalculator/target/wasm32-unknown-unknown/debug/deps/gloo_file-e053f690fe77a214.d: /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/lib.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/blob.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/file_list.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/file_reader.rs /home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/object_url.rs
+
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/lib.rs:
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/blob.rs:
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/file_list.rs:
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/file_reader.rs:
+/home/dirk/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gloo-file-0.2.3/src/object_url.rs:
