@@ -1,8 +1,0 @@
-{
-  "id": 0,
-  "name": "Machine Learning",
-  "teacher": "Steven Bergner",
-  "description": "Machine learning is the study of computer algorithms that improve automatically through experience, which play an increasingly important role in artificial intelligence, computer science and beyond. The goal of this course is to introduce students to machine learning, starting from the foundations and gradually building up to modern techniques. Students in the course will learn about the theoretical underpinnings, modern applications and software tools for applying deep learning. This course is intended to be an introductory course for students interested in conducting research in machine learning or applying machine learning, and should prepare students for more advanced courses, such as CMPT 727 and CMPT 728. No previous knowledge of machine learning is assumed, but students are expected to have solid background in calculus, linear algebra, probability and programming using Python.",
-  "image": "",
-  "unit": 3
-}
