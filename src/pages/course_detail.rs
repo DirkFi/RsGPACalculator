@@ -27,7 +27,6 @@ pub enum Msg {
     GetCourse,
     GetCourseSuccess(Course),
     GetCourseError(Error),
-    NavigateToHome,
 }
 
 impl Component for CourseDetail {
@@ -52,7 +51,7 @@ impl Component for CourseDetail {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         console::log_1(&"Start of update function for course_detail".into());
-        let mut res = true;
+        let res = true;
         match msg {
             Msg::GetCourse => {
                 let id = self.props.id;
@@ -75,10 +74,6 @@ impl Component for CourseDetail {
                 self.state.get_course_error = Some(error);
                 self.state.get_course_loaded = true;
             }
-            Msg::NavigateToHome => {
-                ctx.link().navigator().unwrap().push(&Route::HomePage);
-                res = false;
-            }
         }
         res
     }
@@ -87,7 +82,7 @@ impl Component for CourseDetail {
         false
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self, _ctx: &Context<Self>) -> Html {
         console::log_1(&"Start of view function for course_detail".into());
         if let Some(ref course) = self.state.course {
             console::log_1(&"Rendering course details".into());
@@ -97,7 +92,10 @@ impl Component for CourseDetail {
                     <div class="course_card_name">{&course.name}</div>
                     <div class="course_card_price">{&course.teacher}</div>
                     <div style="margin: 10px 0; line-height: 24px;">{&course.description}</div>
-                    <button class="course_atc_button" onclick={ctx.link().callback(|_| Msg::NavigateToHome)}>{"Return to MainPage"}</button>
+
+                <Link<Route> to={Route::HomePage } >
+                    <button class="course_atc_button" >{"Return to MainPage"}</button>
+                </Link<Route>>
                 </div>
             }
         } else if !self.state.get_course_loaded {

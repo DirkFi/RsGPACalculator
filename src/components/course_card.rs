@@ -31,13 +31,16 @@ impl Component for CourseCard {
         html! {
             <div class="course_card_container">
                 <Link<Route> to={Route::CourseDetail  { id: ctx.props().course.id }} classes="course_card_anchor">
-                    <img class="course_card_image" src={ctx.props().course.image.clone()}/>
                     <div class="course_card_name"> {&ctx.props().course.name}</div>
                     <div class="course_card_teacher"> {&ctx.props().course.teacher}</div>
+                    <img class="course_card_image"  src={ctx.props().course.image.clone()}/>
                 </Link<Route>>
-                <div>
-                    <input type="number" value={ctx.props().grade.to_string()} step="any"  {oninput} />
-                    <input type="checkbox" onclick={ontoggle} checked={ctx.props().check}/>
+                <br/>
+                <div class="grade_input">
+                    <input  type="number" value={ctx.props().grade.to_string()} step="any"  {oninput} />
+                    <span>
+                        <input type="checkbox" onclick={ontoggle} checked={ctx.props().check}/>
+                    </span>
                 </div>
             </div>
         }
