@@ -1,21 +1,68 @@
+/* Apply the theme variables */
 body {
   font-family: "Source Sans Pro", sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+
   -webkit-font-smoothing: subpixel-antialiased;
-  color: #333;
-  background: #f7f7f7;
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
 
 .navbar {
   height: 44px;
-  background: #dd2c00;
-  color: white;
   box-shadow: 0px 5px 12px 0px rgba(46, 51, 51, 0.18);
+  border-radius: 4px;
   position: sticky;
   top: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 2px;
+}
+
+.navbar .right-section {
+  display: flex;
+  align-items: center;
+  gap: 8px; 
+}
+
+#themeToggleButton{
+  background: none; /* 移除背景 */
+  border: none; /* 移除边框 */
+  padding: 8px; /* 设置内边距 */
+  cursor: pointer; /* 鼠标悬停时显示手型 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease; /* 平滑的点击动画 */
+}
+
+#themeToggleButton:hover {
+  transform: scale(1.8); /* 悬停时放大 */
+}
+
+#themeIcon {
+  font-size: 18px; /* 设置图标大小 */
+  color: var(--text-color); /* 根据主题动态调整颜色 */
+  transition: color 0.3s ease; /* 平滑的颜色变化 */
+}
+/* Light Theme Navbar */
+.light .navbar {
+  background-color: var(--navbar-color);
+  color: var(--text-color);
+  border-bottom: 2px solid #ced4da;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark Theme Navbar */
+.dark .navbar {
+  background-color: var(--navbar-color);
+  color: var(--text-color);
+  border-bottom: 2px solid #495057;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .navbar_title {
@@ -28,7 +75,7 @@ body {
   font-weight: bold;
   font-size: 16px;
   margin-right: 10px;
-  background: #b91400;
+  background: #ff4d4d;
   padding: 5px 10px;
   border-radius: 4px;
 }
@@ -46,12 +93,14 @@ body {
   padding: 10px;
   cursor: pointer;
   box-shadow: 0px 1px 10px 0px rgba(46, 51, 51, 0.18);
-  background: white;
+  background: var(--bg-color);
 }
 
 .course_card_container:hover {
   border-color: #ddd;
-  transition: background, border-color 300ms;
+  transition:
+    background,
+    border-color 300ms;
 }
 
 .grade_input {
@@ -60,15 +109,15 @@ body {
 }
 .course_card_anchor {
   text-decoration: none;
-  color: #333;
+  color:  var(--text-color);
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .course_card_image {
-  width: 115px; 
-  height: 195px; 
+  width: 115px;
+  height: 195px;
   border-radius: 8px;
   object-fit: contain;
 }
@@ -90,7 +139,7 @@ body {
   border: 0;
   cursor: pointer;
   background: #dd2c00;
-  color: white;
+  color: var(--bg-color);
   transition: background 300ms;
   font-weight: bold;
 }
@@ -114,19 +163,19 @@ body {
 }
 
 .form-group {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 .form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
 }
 
 .form-group input[type="text"] {
-    width: 100%;
-    padding: 5px;
-    box-sizing: border-box;
+  width: 100%;
+  padding: 5px;
+  box-sizing: border-box;
 }
 
 .loading_spinner_container {
@@ -163,14 +212,24 @@ body {
 
 .button-28 {
   appearance: none;
-  background-color: transparent;
-  border: 2px solid #1A1A1A;
+  background-color: var(--bg-color);
+  border: 2px solid #1a1a1a;
   border-radius: 10px;
   box-sizing: border-box;
-  color: #3B3B3B;
+  color: var(--text-color);
   cursor: pointer;
   display: inline-block;
-  font-family: Roobert,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+  font-family:
+    Roobert,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Helvetica,
+    Arial,
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol";
   font-size: 14px;
   font-weight: 600;
   line-height: normal;
@@ -178,14 +237,14 @@ body {
   min-height: 20px;
   min-width: 0;
   outline: none;
-  padding: 4px 12px; 
+  padding: 4px 12px;
   text-align: center;
   text-decoration: none;
-  transition: all 300ms cubic-bezier(.23, 1, 0.32, 1);
+  transition: all 300ms cubic-bezier(0.23, 1, 0.32, 1);
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  width: auto; 
+  width: auto;
   will-change: transform;
 }
 
@@ -195,7 +254,7 @@ body {
 
 .button-28:hover {
   color: #fff;
-  background-color: #1A1A1A;
+  background-color: #1a1a1a;
   box-shadow: rgba(0, 0, 0, 0.25) 0 8px 15px;
   transform: translateY(-2px);
 }
@@ -205,16 +264,48 @@ body {
   transform: translateY(0);
 }
 
-.gpa-button-container{
-  display: flex; 
-  justify-content: center; 
-  align-items: center; 
-  height: 100vh; 
+.gpa-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
 .home-button {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 300px; 
+  width: 300px;
 }
+
+.generate-button {
+  position: absolute;
+  left: 50%;   
+  margin: 30px auto;
+}
+
+/* Default light theme */
+.light {
+  --bg-color: #ffffff;
+  --navbar-color: #d9e6f2;
+  --text-color: #000000;
+}
+
+/* Dark theme */
+.dark {
+  --bg-color: #42404b;
+  --navbar-color: #52667a;
+  --text-color: #ffffff;
+}
+
+
+button {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.container {
+  text-align: center;
+  margin-top: 50px;
+}
+

@@ -6,7 +6,9 @@ use crate::components::CourseCard;
 use crate::types::Course;
 use anyhow::Error;
 use std::rc::Rc;
+use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
+use web_sys::window;
 use web_sys::{console, HtmlInputElement};
 use yew::prelude::*;
 use yew_router::prelude::*;
@@ -24,6 +26,7 @@ struct State {
 
 pub struct Home {
     state: State,
+    theme: String,
 }
 
 pub enum Msg {
@@ -37,6 +40,7 @@ pub enum Msg {
     UpdateUserCourseUnit(usize, String),
     UpdateUserCourseGrade(usize, String),
     ToggleUserCourseCheck(usize),
+    ToggleTheme,
 }
 
 pub fn point_to_pa(point: f32) -> f32 {
@@ -208,12 +212,29 @@ impl Component for Home {
     fn create(ctx: &Context<Self>) -> Self {
         console::log_1(&"Hello from Yew in creation!".into());
         ctx.link().send_message(Msg::GetCourses);
+        let window = web_sys::window().expect("window should exist");
+        // Get the initial theme, default to "light"
+        let initial_theme = {
+            if let Some(storage) = window.local_storage().ok().flatten() {
+                match storage.get_item("theme") {
+                    Ok(Some(theme)) => theme,
+                    _ => "light".to_string(),
+                }
+            } else {
+                "light".to_string()
+            }
+        };
 
+        // Set the theme on the body element
+        let document = window.document().unwrap();
+        let body = document.body().unwrap();
+        body.set_class_name(&initial_theme);
         Self {
             state: State {
                 get_courses_error: None,
                 get_courses_loaded: false,
             },
+            theme: initial_theme,
         }
     }
 
@@ -352,6 +373,36 @@ impl Component for Home {
 
                 self.update_app_single_state(ctx, AppStateValue::UserChecks(user_checks));
             }
+            Msg::ToggleTheme => {
+                // Toggle between light and dark themes
+                let new_theme = if self.theme == "light" {
+                    "dark".to_string()
+                } else {
+                    "light".to_string()
+                };
+
+                // Update theme state
+                self.theme = new_theme.clone();
+
+                // Save to localStorage
+                let window = window().unwrap();
+                let storage = window.local_storage().unwrap().unwrap();
+                storage.set_item("theme", &new_theme).unwrap();
+
+                // Update body class
+                let document = window.document().unwrap();
+                let icon = document
+                    .get_element_by_id("themeIcon")
+                    .expect("theme icon should exist");
+                let icon = icon.dyn_into::<web_sys::HtmlElement>().unwrap();
+                if new_theme == "dark" {
+                    icon.set_class_name("fas fa-sun");
+                } else {
+                    icon.set_class_name("fas fa-moon");
+                }
+                let body = document.body().unwrap();
+                body.set_class_name(&new_theme);
+            }
         }
         true
     }
@@ -394,12 +445,18 @@ impl Component for Home {
               </div>
             }
         } else {
+            let toggle_theme = ctx.link().callback(|_| Msg::ToggleTheme);
             html! {
                 <div>
                     <div class="navbar">
                         <div class="navbar_title"> {"GPA Calculator written in Rust"}</div>
-                        <div class="navbar_value"> {"GPA: "}{self.calculate_gpa(ctx)}</div>
-
+                        <div class="right-section">
+                            <button id="themeToggleButton" onclick={toggle_theme}>
+                                //{ if self.theme == "light" { "Switch to Dark Mode" } else { "Switch to Light Mode" } }
+                                <i id="themeIcon" class="fas fa-moon"></i>
+                            </button>
+                            <div class="navbar_value"> {"GPA: "}{self.calculate_gpa(ctx)}</div>
+                        </div>
                     </div>
                     <div>
                         <span class="course_card_list">{courses_html}</span>
@@ -417,9 +474,9 @@ impl Component for Home {
                             })}
                         </div>
                         <Link<InnerRoute> to={InnerRoute::GradeView }>
-                            <div class="home-button">
+                            <div class="generate-button">
                                 <button class="button-28">{"Generate"}</button>
-                    </div>
+                            </div>
                          </Link<InnerRoute>>
                      </div>
 
