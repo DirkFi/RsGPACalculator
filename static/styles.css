@@ -10,7 +10,6 @@ body {
   -webkit-font-smoothing: subpixel-antialiased;
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
-
 .navbar {
   height: 44px;
   box-shadow: 0px 5px 12px 0px rgba(46, 51, 51, 0.18);
@@ -30,14 +29,14 @@ body {
 }
 
 #themeToggleButton{
-  background: none; /* 移除背景 */
-  border: none; /* 移除边框 */
-  padding: 8px; /* 设置内边距 */
-  cursor: pointer; /* 鼠标悬停时显示手型 */
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s ease; /* 平滑的点击动画 */
+  transition: transform 0.3s ease;
 }
 
 #themeToggleButton:hover {
@@ -49,6 +48,7 @@ body {
   color: var(--text-color); /* 根据主题动态调整颜色 */
   transition: color 0.3s ease; /* 平滑的颜色变化 */
 }
+
 /* Light Theme Navbar */
 .light .navbar {
   background-color: var(--navbar-color);
@@ -101,6 +101,8 @@ body {
   transition:
     background,
     border-color 300ms;
+  transform: scale(1.1);
+
 }
 
 .grade_input {

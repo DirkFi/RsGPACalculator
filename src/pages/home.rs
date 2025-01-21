@@ -449,7 +449,7 @@ impl Component for Home {
             html! {
                 <div>
                     <div class="navbar">
-                        <div class="navbar_title"> {"GPA Calculator written in Rust"}</div>
+                        <div class="navbar_title"> {"SFU GPA Calculator written in Rust"}</div>
                         <div class="right-section">
                             <button id="themeToggleButton" onclick={toggle_theme}>
                                 //{ if self.theme == "light" { "Switch to Dark Mode" } else { "Switch to Light Mode" } }
