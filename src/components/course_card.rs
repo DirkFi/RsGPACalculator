@@ -1,5 +1,4 @@
 // src/components/course_card.rs
-
 use crate::route::Route;
 use crate::types::Course;
 use yew::prelude::*;

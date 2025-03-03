@@ -2,19 +2,8 @@
 use crate::types::Course;
 use anyhow::{Error, Ok};
 use gloo::net::http::Request;
-// use reqwasm::http::Request;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
-// use yew::format::{Json, Nothing};
-// use yew::services::fetch::{FetchService, FetchTask, Request, Response};
-// pub type FetchResponse<T> = Response<Json<Result<T, Error>>>;
-// type FetchCallback<T> = Callback<FetchResponse<T>>;
-//
-// pub fn get_courses(callback: FetchCallback<Vec<Course>>) -> FetchTask {
-//     let req = Request::get("/courses/courses.json").body(Nothing).unwrap();
-//
-//     FetchService::fetch(req, callback).unwrap()
-// }
 
 pub fn get_courses(callback: Callback<Result<Vec<Course>, Error>>) {
     spawn_local(async move {
@@ -32,7 +21,6 @@ pub fn get_courses(callback: Callback<Result<Vec<Course>, Error>>) {
         .await;
 
         // pass the res
-
         callback.emit(result);
     });
 }
