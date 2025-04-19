@@ -10,8 +10,10 @@ pub struct CourseCard;
 pub struct Props {
     pub course: Course,
     pub grade: f32,
+    pub grade_letter: String,
     pub check: bool,
     pub on_input_change: Callback<InputEvent>,
+    pub on_select_change: Callback<Event>,
     pub on_toggle: Callback<()>,
 }
 
@@ -25,6 +27,7 @@ impl Component for CourseCard {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let oninput = ctx.props().on_input_change.reform(|e: InputEvent| e);
+        let onselect = ctx.props().on_select_change.reform(|e: Event| e);
         let ontoggle = ctx.props().on_toggle.reform(|_| ());
 
         html! {
@@ -37,6 +40,17 @@ impl Component for CourseCard {
                 <br/>
                 <div class="grade_input">
                     <input  type="number" value={ctx.props().grade.to_string()} step="any"  {oninput} />
+                    <select onchange={onselect} value={ctx.props().grade_letter.clone()}>
+                        <option value="A+">{"A+"}</option>
+                        <option value="A">{"A"}</option>
+                        <option value="A-">{"A-"}</option>
+                        <option value="B+">{"B+"}</option>
+                        <option value="B">{"B"}</option>
+                        <option value="B-">{"B-"}</option>
+                        <option value="C+">{"C+"}</option>
+                        <option value="C">{"C"}</option>
+                        <option value="F">{"F"}</option>
+                    </select>
                     <span>
                         <input type="checkbox" onclick={ontoggle} checked={ctx.props().check}/>
                     </span>

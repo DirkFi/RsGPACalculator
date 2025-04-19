@@ -9,7 +9,7 @@ use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::window;
-use web_sys::{console, HtmlInputElement};
+use web_sys::{console, HtmlInputElement, HtmlSelectElement};
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -31,6 +31,7 @@ pub struct Home {
 
 pub enum Msg {
     UpdateValue(usize, String),
+    UpdateValueLetter(usize, String),
     ToggleCourseCheck(usize),
     GetCourses,
     GetCoursesSuccess(Vec<Course>),
@@ -39,24 +40,56 @@ pub enum Msg {
     UpdateUserCourseName(usize, String),
     UpdateUserCourseUnit(usize, String),
     UpdateUserCourseGrade(usize, String),
+    UpdateUserCourseGradeLetter(usize, String),
     ToggleUserCourseCheck(usize),
     ToggleTheme,
 }
 
+/// Converts a letter grade to an average percentage score (representative point)
+pub fn letter_to_point(letter: &str) -> f32 {
+    match letter {
+        "A+" => 97.0,
+        "A" => 93.0,
+        "A-" => 90.0,
+        "B+" => 87.0,
+        "B" => 83.0,
+        "B-" => 80.0,
+        "C+" => 77.0,
+        "C" => 73.0,
+        "F" => 50.0,
+        _ => 0.0, // invalid input
+    }
+}
+
+/// Converts a percentage score to a letter grade
+pub fn point_to_letter(point: f32) -> String {
+    match point {
+        95.0..=100.0 => "A+".to_string(),
+        90.0..95.0 => "A".to_string(),
+        85.0..90.0 => "A-".to_string(),
+        80.0..85.0 => "B+".to_string(),
+        75.0..80.0 => "B".to_string(),
+        70.0..75.0 => "B-".to_string(),
+        65.0..70.0 => "C+".to_string(),
+        60.0..65.0 => "C".to_string(),
+        0.0..60.0 => "F".to_string(),
+        _ => "".to_string(),
+    }
+}
+
+/// Converts a percentage score to GPA (PA) following the SFU scale
 pub fn point_to_pa(point: f32) -> f32 {
     match point {
-        95.0..=100.0 => 4.33,
-        90.0..=95.0 => 4.0,
-        85.0..90.0 => 3.67,
-        80.0..85.0 => 3.33,
-        75.0..80.0 => 3.0,
-        70.0..75.0 => 2.67,
-        65.0..70.0 => 2.33,
-        60.0..65.0 => 2.0,
-        55.0..60.0 => 1.67,
-        50.0..55.0 => 1.0,
-        0.0..50.0 => 0.0,
-        _ => -1.0,
+        95.0..=100.0 => 4.33, // A+
+        90.0..95.0 => 4.00,   // A
+        85.0..90.0 => 3.67,   // A-
+        80.0..85.0 => 3.33,   // B+
+        75.0..80.0 => 3.00,   // B (lowest passing)
+        70.0..75.0 => 2.67,   // B- (fail in grad school)
+        65.0..70.0 => 2.33,   // C+ (fail)
+        60.0..65.0 => 2.00,   // C  (fail)
+        0.0..60.0 => 0.00,    // F
+        _ => -1.0,            // invalid input
     }
 }
 
@@ -102,12 +135,10 @@ impl Home {
         index: usize,
         course: &Course,
     ) -> Html {
-        // let (app_state, _context_handle) = ctx
-        //     .link()
-        //     .context::<AppStateContext>(Callback::noop())
-        //     .expect("No AppStateContext found");
         let user_grades = (*app_state.user_grades).clone();
+        let user_grades_letter = (*app_state.user_grades_letter).clone();
         let user_checks = (*app_state.user_checks).clone();
+
         let on_name_input = ctx.link().callback(move |e: InputEvent| {
             let input: HtmlInputElement = e.target_unchecked_into();
             Msg::UpdateUserCourseName(index, input.value())
@@ -123,10 +154,17 @@ impl Home {
             Msg::UpdateUserCourseGrade(index, input.value())
         });
 
+        let on_grade_letter_change = ctx.link().callback(move |e: Event| {
+            let select: HtmlSelectElement = e.target_unchecked_into();
+            Msg::UpdateUserCourseGradeLetter(index, select.value())
+        });
+
         let on_toggle = ctx
             .link()
             .callback(move |_| Msg::ToggleUserCourseCheck(index));
 
+        console::log_1(&JsValue::from("Letter is "));
+        console::log_1(&JsValue::from(&user_grades_letter[index]));
         html! {
             <div class="course_card_container">
                 <div class="form-group">
@@ -140,7 +178,6 @@ impl Home {
                     />
                     <br/>
                 </div>
-
 
                 <div class="form-group">
                     <label for="unit">{ "Unit: " }</label>
@@ -163,6 +200,22 @@ impl Home {
                         value={user_grades[index].to_string()}
                         oninput={on_grade_input}
                     />
+                    <select
+                        id="grade_letter"
+                        value={user_grades_letter[index].clone()}
+                        onchange={on_grade_letter_change}
+                    >
+                        // <option value="">{"--Select Grade--"}</option>
+                        <option value="A+">{"A+"}</option>
+                        <option value="A">{"A"}</option>
+                        <option value="A-">{"A-"}</option>
+                        <option value="B+">{"B+"}</option>
+                        <option value="B">{"B"}</option>
+                        <option value="B-">{"B-"}</option>
+                        <option value="C+">{"C+"}</option>
+                        <option value="C">{"C"}</option>
+                        <option value="F">{"F"}</option>
+                    </select>
                 </div>
                 <input
                     type="checkbox"
@@ -178,6 +231,7 @@ impl Home {
         ctx: &Context<Self>,
         user_courses: Vec<Course>,
         user_grades: Vec<f32>,
+        user_grades_letter: Vec<String>,
         user_checks: Vec<bool>,
     ) {
         if self.state.get_courses_loaded {
@@ -190,6 +244,7 @@ impl Home {
             app_state.dispatch(AppStateAction::UpdateAllUser {
                 user_courses: Rc::new(user_courses.clone()),
                 user_grades: Rc::new(user_grades.clone()),
+                user_grades_letter: Rc::new(user_grades_letter.clone()),
                 user_checks: Rc::new(user_checks.clone()),
             });
         }
@@ -265,14 +320,22 @@ impl Component for Home {
                     vec![0.0; courses.len()]
                 };
 
+                let grades_letter = if !app_state.grades_letter.is_empty() {
+                    (*app_state.grades_letter).clone()
+                } else {
+                    vec!["".to_string(); courses.len()]
+                };
+
                 let checks = if !app_state.checks.is_empty() {
                     (*app_state.checks).clone()
                 } else {
                     vec![false; courses.len()]
                 };
+
                 app_state.dispatch(AppStateAction::UpdateAllNonUser {
                     courses: Rc::new(courses),
                     grades: Rc::new(grades),
+                    grades_letter: Rc::new(grades_letter),
                     checks: Rc::new(checks),
                 });
             }
@@ -281,7 +344,7 @@ impl Component for Home {
                 self.state.get_courses_error = Some(error);
                 self.state.get_courses_loaded = true;
             }
-            // Need to change this from self to mutual context
+
             Msg::UpdateValue(index, value) => {
                 let possible_num = value.parse::<f32>();
                 let mut grades = (*app_state.grades).clone();
@@ -293,17 +356,55 @@ impl Component for Home {
                         } else {
                             grades.push(num);
                         }
+
+                        // Also update the letter grade
+                        let mut grades_letter = (*app_state.grades_letter).clone();
+                        let letter = point_to_letter(num);
+                        if let Some(lg) = grades_letter.get_mut(index) {
+                            *lg = letter;
+                        } else {
+                            grades_letter.push(letter);
+                        }
+
+                        if self.state.get_courses_loaded {
+                            self.update_app_single_state(
+                                ctx,
+                                AppStateValue::GradesLetter(grades_letter),
+                            );
+                        }
                     }
                     Err(_) => {
                         console::log_1(&"You should only type numbers here!".into());
                     }
                 }
+
                 console::log_1(&"Current point is: ".into());
                 console::log_1(&JsValue::from(grades[index]));
-
                 if self.state.get_courses_loaded {
                     self.update_app_single_state(ctx, AppStateValue::Grades(grades));
                 }
+            }
+
+            Msg::UpdateValueLetter(index, letter) => {
+                let mut grades_letter = (*app_state.grades_letter).clone();
+                if let Some(lg) = grades_letter.get_mut(index) {
+                    *lg = letter.clone();
+                } else {
+                    grades_letter.push(letter.clone());
+                }
+
+                // Also update the numeric grade
+                let point = letter_to_point(&letter);
+                let mut grades = (*app_state.grades).clone();
+                if let Some(grade) = grades.get_mut(index) {
+                    *grade = point;
+                } else {
+                    grades.push(point);
+                }
+
+                // Update both in state
+                self.update_app_single_state(ctx, AppStateValue::Grades(grades));
+                self.update_app_single_state(ctx, AppStateValue::GradesLetter(grades_letter));
             }
 
             Msg::ToggleCourseCheck(id) => {
@@ -324,7 +425,9 @@ impl Component for Home {
                 let courses_len = app_state.courses.len();
                 let mut user_courses = (*app_state.user_courses).clone();
                 let mut user_grades = (*app_state.user_grades).clone();
+                let mut user_grades_letter = (*app_state.user_grades_letter).clone();
                 let mut user_checks = (*app_state.user_checks).clone();
+
                 user_courses.push(Course {
                     id: courses_len + user_courses.len(),
                     teacher: "".to_string(),
@@ -334,11 +437,21 @@ impl Component for Home {
                     unit: 0,
                     // Other fields if necessary
                 });
+
                 user_grades.push(0.0);
+                user_grades_letter.push("A+".to_string());
                 user_checks.push(false);
+
                 // Update the AppState context
-                self.update_app_user_state(ctx, user_courses, user_grades, user_checks);
+                self.update_app_user_state(
+                    ctx,
+                    user_courses,
+                    user_grades,
+                    user_grades_letter,
+                    user_checks,
+                );
             }
+
             Msg::UpdateUserCourseName(index, name) => {
                 let mut user_courses = (*app_state.user_courses).clone();
                 if let Some(course) = user_courses.get_mut(index) {
@@ -346,6 +459,7 @@ impl Component for Home {
                 }
                 self.update_app_single_state(ctx, AppStateValue::UserCourses(user_courses));
             }
+
             Msg::UpdateUserCourseUnit(index, unit_str) => {
                 let mut user_courses = (*app_state.user_courses).clone();
                 if let Ok(unit) = unit_str.parse::<i32>() {
@@ -355,15 +469,49 @@ impl Component for Home {
                 }
                 self.update_app_single_state(ctx, AppStateValue::UserCourses(user_courses));
             }
+
             Msg::UpdateUserCourseGrade(index, grade_str) => {
                 let mut user_grades = (*app_state.user_grades).clone();
                 if let Ok(grade) = grade_str.parse::<f32>() {
                     if let Some(grade_slot) = user_grades.get_mut(index) {
                         *grade_slot = grade;
                     }
+
+                    // Also update the letter grade
+                    let mut user_grades_letter = (*app_state.user_grades_letter).clone();
+                    let letter = point_to_letter(grade);
+                    if let Some(lg) = user_grades_letter.get_mut(index) {
+                        *lg = letter;
+                    }
+                    self.update_app_single_state(
+                        ctx,
+                        AppStateValue::UserGradesLetter(user_grades_letter),
+                    );
                 }
 
                 self.update_app_single_state(ctx, AppStateValue::UserGrades(user_grades));
+            }
+
+            Msg::UpdateUserCourseGradeLetter(index, value) => {
+                let mut user_grades_letter = (*app_state.user_grades_letter).clone();
+                if let Some(lg) = user_grades_letter.get_mut(index) {
+                    *lg = value.clone();
+                } else {
+                    user_grades_letter.push(value.clone());
+                }
+
+                // Also update the numeric grade
+                let mut user_grades = (*app_state.user_grades).clone();
+                let numeric_grade = letter_to_point(&value);
+                if let Some(grade) = user_grades.get_mut(index) {
+                    *grade = numeric_grade;
+                    self.update_app_single_state(ctx, AppStateValue::UserGrades(user_grades));
+                }
+
+                self.update_app_single_state(
+                    ctx,
+                    AppStateValue::UserGradesLetter(user_grades_letter),
+                );
             }
             Msg::ToggleUserCourseCheck(index) => {
                 let mut user_checks = (*app_state.user_checks).clone();
@@ -373,6 +521,7 @@ impl Component for Home {
 
                 self.update_app_single_state(ctx, AppStateValue::UserChecks(user_checks));
             }
+
             Msg::ToggleTheme => {
                 // Toggle between light and dark themes
                 let new_theme = if self.theme == "light" {
@@ -416,6 +565,7 @@ impl Component for Home {
             .link()
             .context::<AppStateContext>(Callback::noop())
             .expect("No AppStateContext found");
+
         let courses_html: Vec<Html> = app_state
             .courses
             .iter()
@@ -423,17 +573,30 @@ impl Component for Home {
             .map(|(index, course): (usize, &Course)| {
                 let oninput = ctx.link().callback(move |e: InputEvent| {
                     let input: HtmlInputElement = e.target_unchecked_into();
-
                     Msg::UpdateValue(index, input.value())
                 });
 
+                let onselect = ctx.link().callback(move |e: Event| {
+                    let select: HtmlSelectElement = e.target_unchecked_into();
+                    Msg::UpdateValueLetter(index, select.value())
+                });
+
                 let ontoggle = ctx.link().callback(move |_| Msg::ToggleCourseCheck(index));
+
                 html! {
-                <CourseCard course={course.clone()} grade={app_state.grades[index]}
-                    check={app_state.checks[index]} on_input_change={oninput} on_toggle={ontoggle}/>
+                    <CourseCard
+                        course={course.clone()}
+                        grade={app_state.grades[index]}
+                        grade_letter={app_state.grades_letter[index].clone()}
+                        check={app_state.checks[index]}
+                        on_input_change={oninput}
+                        on_select_change={onselect}
+                        on_toggle={ontoggle}
+                    />
                 }
             })
             .collect();
+
         if !self.state.get_courses_loaded {
             html! {
               <div>{"Loading ..."}</div>

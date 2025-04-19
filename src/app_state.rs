@@ -24,6 +24,8 @@ pub enum AppStateValue {
     UserCourses(Vec<Course>),
     UserGrades(Vec<f32>),
     UserChecks(Vec<bool>),
+    GradesLetter(Vec<String>),
+    UserGradesLetter(Vec<String>),
 }
 
 #[derive(Clone, PartialEq)]
@@ -34,6 +36,8 @@ pub struct AppState {
     pub user_courses: Rc<Vec<Course>>, // User-added courses
     pub user_grades: Rc<Vec<f32>>,
     pub user_checks: Rc<Vec<bool>>,
+    pub grades_letter: Rc<Vec<String>>,
+    pub user_grades_letter: Rc<Vec<String>>,
 }
 
 impl Default for AppState {
@@ -41,9 +45,11 @@ impl Default for AppState {
         Self {
             courses: Rc::new(vec![]),
             grades: Rc::new(vec![]),
+            grades_letter: Rc::new(vec![]),
             checks: Rc::new(vec![]),
             user_courses: Rc::new(vec![]),
             user_grades: Rc::new(vec![]),
+            user_grades_letter: Rc::new(vec![]),
             user_checks: Rc::new(vec![]),
         }
     }
@@ -53,19 +59,23 @@ pub enum AppStateAction {
     UpdateAll {
         courses: Rc<Vec<Course>>,
         grades: Rc<Vec<f32>>,
+        grades_letter: Rc<Vec<String>>,
         checks: Rc<Vec<bool>>,
         user_courses: Rc<Vec<Course>>,
         user_grades: Rc<Vec<f32>>,
+        user_grades_letter: Rc<Vec<String>>,
         user_checks: Rc<Vec<bool>>,
     },
     UpdateAllNonUser {
         courses: Rc<Vec<Course>>,
         grades: Rc<Vec<f32>>,
+        grades_letter: Rc<Vec<String>>,
         checks: Rc<Vec<bool>>,
     },
     UpdateAllUser {
         user_courses: Rc<Vec<Course>>,
         user_grades: Rc<Vec<f32>>,
+        user_grades_letter: Rc<Vec<String>>,
         user_checks: Rc<Vec<bool>>,
     },
 
@@ -81,89 +91,111 @@ impl Reducible for AppState {
             AppStateAction::UpdateAll {
                 courses,
                 grades,
+                grades_letter,
                 checks,
                 user_courses,
                 user_grades,
+                user_grades_letter,
                 user_checks,
             } => Rc::new(Self {
                 courses,
                 grades,
+                grades_letter,
                 checks,
                 user_courses,
                 user_grades,
+                user_grades_letter,
                 user_checks,
             }),
 
             AppStateAction::UpdateAllNonUser {
                 courses,
                 grades,
+                grades_letter,
                 checks,
             } => Rc::new(Self {
                 courses,
                 grades,
+                grades_letter,
                 checks,
                 user_courses: Rc::clone(&self.user_courses),
                 user_grades: Rc::clone(&self.user_grades),
+                user_grades_letter: Rc::clone(&self.user_grades_letter),
                 user_checks: Rc::clone(&self.user_checks),
             }),
             AppStateAction::UpdateAllUser {
                 user_courses,
                 user_grades,
+                user_grades_letter,
                 user_checks,
             } => Rc::new(Self {
                 courses: Rc::clone(&self.courses),
                 grades: Rc::clone(&self.grades),
+                grades_letter: Rc::clone(&self.grades_letter),
                 checks: Rc::clone(&self.checks),
                 user_courses,
                 user_grades,
+                user_grades_letter,
                 user_checks,
             }),
-            AppStateAction::UpdateSingle { values } => {
-                match values {
-                    AppStateValue::Courses(courses) => {
-                        update_with_rc!(
-                            self,
-                            {  grades, checks,user_courses, user_grades,  user_checks },   // Rc::clone fields
-                            { courses: Rc::new( courses ) }  // non-Rc fields
-                        )
-                    }
-                    AppStateValue::Grades(grades) => {
-                        update_with_rc!(
-                            self,
-                            {  courses, checks,user_courses, user_grades,  user_checks },   // Rc::clone fields
-                            { grades: Rc::new( grades ) }  // non-Rc fields
-                        )
-                    }
-                    AppStateValue::Checks(checks) => {
-                        update_with_rc!(
-                            self,
-                            {  courses, grades,user_courses, user_grades,  user_checks },   // Rc::clone fields
-                            { checks: Rc::new( checks ) }  // non-Rc fields
-                        )
-                    }
-                    AppStateValue::UserCourses(user_courses) => {
-                        update_with_rc!(
-                            self,
-                            {  courses, grades,checks, user_grades,  user_checks },   // Rc::clone fields
-                            { user_courses: Rc::new( user_courses ) }  // non-Rc fields
-                        )
-                    }
-                    AppStateValue::UserGrades(user_grades) => {
-                        update_with_rc!(
-                            self,
-                            {  courses, grades,checks, user_courses,  user_checks },   // Rc::clone fields
-                            { user_grades: Rc::new( user_grades ) }  // non-Rc fields
-                        )
-                    }
-                    AppStateValue::UserChecks(user_checks) => {
-                        update_with_rc!(
-                            self,
-                            {  courses, grades,checks, user_courses,  user_grades },   // Rc::clone fields
-                            { user_checks: Rc::new( user_checks ) }  // non-Rc fields
-                        )
-                    }
+            AppStateAction::UpdateSingle { values } => match values {
+                AppStateValue::Courses(courses) => {
+                    update_with_rc!(
+                        self,
+                        { grades, grades_letter, checks, user_courses, user_grades, user_grades_letter, user_checks },
+                        { courses: Rc::new(courses) }
+                    )
                 }
-            }
+                AppStateValue::Grades(grades) => {
+                    update_with_rc!(
+                        self,
+                        { courses, grades_letter, checks, user_courses, user_grades, user_grades_letter, user_checks },
+                        { grades: Rc::new(grades) }
+                    )
+                }
+                AppStateValue::GradesLetter(grades_letter) => {
+                    update_with_rc!(
+                        self,
+                        { courses, grades, checks, user_courses, user_grades, user_grades_letter, user_checks },
+                        { grades_letter: Rc::new(grades_letter) }
+                    )
+                }
+                AppStateValue::Checks(checks) => {
+                    update_with_rc!(
+                        self,
+                        { courses, grades, grades_letter, user_courses, user_grades, user_grades_letter, user_checks },
+                        { checks: Rc::new(checks) }
+                    )
+                }
+                AppStateValue::UserCourses(user_courses) => {
+                    update_with_rc!(
+                        self,
+                        { courses, grades, grades_letter, checks, user_grades, user_grades_letter, user_checks },
+                        { user_courses: Rc::new(user_courses) }
+                    )
+                }
+                AppStateValue::UserGrades(user_grades) => {
+                    update_with_rc!(
+                        self,
+                        { courses, grades, grades_letter, checks, user_courses, user_grades_letter, user_checks },
+                        { user_grades: Rc::new(user_grades) }
+                    )
+                }
+                AppStateValue::UserGradesLetter(user_grades_letter) => {
+                    update_with_rc!(
+                        self,
+                        { courses, grades, grades_letter, checks, user_courses, user_grades, user_checks },
+                        { user_grades_letter: Rc::new(user_grades_letter) }
+                    )
+                }
+                AppStateValue::UserChecks(user_checks) => {
+                    update_with_rc!(
+                        self,
+                        { courses, grades, grades_letter, checks, user_courses, user_grades, user_grades_letter },
+                        { user_checks: Rc::new(user_checks) }
+                    )
+                }
+            },
         }
     }
 }
