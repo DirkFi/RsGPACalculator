@@ -1,0 +1,23 @@
+.github/workflows/deploy-pages.yml
+  s_9b9217fc543d32::t_8d543721359acb 34-36
+src/api.rs
+  s_9b9217fc543d32::t_8d543721359acb 11,31
+static/index.html
+  s_9b9217fc543d32::t_8d543721359acb 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "62cf2800b04d91fd30ffd504548648972ea702f7",
+  "prompts": {},
+  "sessions": {
+    "s_9b9217fc543d32": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "67656786-4b52-45da-9353-c813edd26566",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "DirkFi <ming557@outlook.com>"
+    }
+  }
+}
