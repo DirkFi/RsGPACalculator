@@ -19,3 +19,12 @@ Visit it on http://0.0.0.0:3000/!
 
 ## Online Version
 Of course, you can directly visit the all-done webpage through https://dirkfi.github.io/RsGPACalculator/!
+
+## Automatic GitHub Pages Deployment
+
+The workflow in `.github/workflows/deploy-pages.yml` rebuilds and deploys the
+site automatically after every push to `main`.
+
+To enable it for a repository, open **Settings → Pages**, set **Source** to
+**GitHub Actions**, and push to `main`. The deployed site will be available at
+https://dirkfi.github.io/RsGPACalculator/.
