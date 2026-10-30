@@ -31,6 +31,9 @@ jobs:
       - name: Build WebAssembly application
         run: wasm-pack build --release --target web --out-name wasm --out-dir ./static
 
+      - name: Set base path for project page
+        run: sed -i 's|<base href="/">|<base href="/${{ github.event.repository.name }}/">|' static/index.html
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

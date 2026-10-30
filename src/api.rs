@@ -8,7 +8,7 @@ use yew::prelude::*;
 pub fn get_courses(callback: Callback<Result<Vec<Course>, Error>>) {
     spawn_local(async move {
         let result = async {
-            let response = Request::get("/courses/courses.json")
+            let response = Request::get("courses/courses.json")
                 .send()
                 .await
                 .map_err(Error::from)?;
@@ -28,7 +28,7 @@ pub fn get_courses(callback: Callback<Result<Vec<Course>, Error>>) {
 pub fn get_course(id: usize, callback: Callback<Result<Course, Error>>) {
     spawn_local(async move {
         let result = async {
-            let response = Request::get("/courses/courses.json")
+            let response = Request::get("courses/courses.json")
                 .send()
                 .await
                 .map_err(Error::from)?;
