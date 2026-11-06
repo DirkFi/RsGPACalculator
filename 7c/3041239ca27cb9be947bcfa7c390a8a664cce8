@@ -1,0 +1,19 @@
+src/api.rs
+  s_a11bd8a9b5cb12::t_9342992c015c3d 3,8,10-15,17-19,26-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7c3041239ca27cb9be947bcfa7c390a8a664cce8",
+  "prompts": {},
+  "sessions": {
+    "s_a11bd8a9b5cb12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6083c94-45e6-4022-9807-73cc000d9925",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "DirkFi <ming557@outlook.com>"
+    }
+  }
+}
